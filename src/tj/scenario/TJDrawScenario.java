@@ -1,11 +1,11 @@
-package Scenario;
+package tj.scenario;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
-import TJ.TJScene;
-import X.XApp;
-import X.XScenario;
+import tj.TJScene;
+import x.XApp;
+import x.XScenario;
 
 public class TJDrawScenario extends XScenario {
 
@@ -81,7 +81,7 @@ public class TJDrawScenario extends XScenario {
             // TODO Auto-generated method stub
         }
         @Override
-        public void renderSceenObjects(Graphics2D g2) {
+        public void renderScreenObjects(Graphics2D g2) {
             // TODO Auto-generated method stub
         }
     }
