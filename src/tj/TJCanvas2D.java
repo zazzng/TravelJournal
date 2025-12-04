@@ -14,6 +14,8 @@ public class TJCanvas2D extends JPanel {
     private static final Color COLOR_PT_CURVE_DEFAULT = new Color(0, 0, 0);
 
     private static final Stroke STROKE_PT_CURVE_DEFAULT = new BasicStroke(5f);
+    
+    public static final double PAGE_ASPECT_RATIO = 0.75;
 
     // fields
     private TJ mTJ = null;

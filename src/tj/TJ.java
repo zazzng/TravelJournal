@@ -1,5 +1,7 @@
 package tj;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import javax.swing.JFrame;
 
 import x.XApp;
@@ -48,8 +50,14 @@ public class TJ extends XApp {
         this.mCanvas2D.addKeyListener(this.mEventListener);
         
         // build and show visual components
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double widthRatio = 0.75;
+        double heightRatio = 0.75;
+        int appWidth = (int)(screenSize.width * widthRatio);
+        int appHeight = (int)(screenSize.height * heightRatio);
+        
         this.mFrame.add(this.mCanvas2D);
-        this.mFrame.setSize(800, 600);
+        this.mFrame.setSize(appWidth, appHeight);
         this.mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.mFrame.setVisible(true);
     }
