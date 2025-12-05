@@ -1,8 +1,12 @@
 package tj;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import x.XApp;
 import x.XLogMgr;
@@ -16,9 +20,19 @@ public class TJ extends XApp {
         return this.mCanvas2D;
     }
     
+    private JPanel mCurControlPanel = null;
+    public JPanel getCurControlPanel() {
+        return this.mCurControlPanel;
+    }
+    
     private TJEventListener mEventListener = null;
     public TJEventListener getEventListener() {
         return this.mEventListener;
+    }
+    
+    private TJPageMgr mPageMgr = null;
+    public TJPageMgr getPageMgr() {
+        return this.mPageMgr;
     }
 
     private XScenarioMgr mScenarioMgr = null;
@@ -33,15 +47,25 @@ public class TJ extends XApp {
         return this.mLogMgr;
     }
     
-    public TJ() {
+    public TJ() throws IOException {
         // create components
         // 1) Frame, 2) Canvas, 3) Other components
         // 4) Event listeners, 5) Managers
         this.mFrame = new JFrame("TravelJournal");
+        this.mFrame.setLayout(new BorderLayout());
         this.mCanvas2D = new TJCanvas2D(this);
+        this.mEventListener = new TJEventListener(this);
+        this.mPageMgr = new TJPageMgr(this);
         this.mScenarioMgr = new TJScenarioMgr(this);
         this.mLogMgr = new XLogMgr();
         this.mLogMgr.setPrintOn(true);
+        
+        // load or initialize journal data
+        boolean loadSuccess = this.mPageMgr.loadJournal();
+        if (!loadSuccess || this.mPageMgr.getJournalPages().isEmpty()) {
+            // Start with a blank spread if loading failed or file was empty
+            this.mPageMgr.addEmptyPage(); 
+        }
         
         // connect event listeners
         this.mCanvas2D.addMouseListener(this.mEventListener);
@@ -56,13 +80,29 @@ public class TJ extends XApp {
         int appWidth = (int)(screenSize.width * widthRatio);
         int appHeight = (int)(screenSize.height * heightRatio);
         
-        this.mFrame.add(this.mCanvas2D);
+        this.mFrame.add(this.mCanvas2D, BorderLayout.CENTER);
         this.mFrame.setSize(appWidth, appHeight);
         this.mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.mFrame.setVisible(true);
     }
     
-    public static void main(String[] args) {
+    public void setControlPanel(JPanel newPanel) {
+        if (this.mCurControlPanel != null) {
+            this.mFrame.remove(this.mCurControlPanel);
+        }
+        
+        this.mCurControlPanel = newPanel;
+        
+        if (this.mCurControlPanel != null) {
+            this.mFrame.add(this.mCurControlPanel, BorderLayout.SOUTH);
+        }
+        
+        // Revalidate and repaint the frame to apply the layout change
+        this.mFrame.revalidate();
+        this.mFrame.repaint();
+    }
+    
+    public static void main(String[] args) throws IOException {
         // create a TJ instance
         new TJ();
     }
