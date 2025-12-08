@@ -1,14 +1,20 @@
 package tj.scenario;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
+import java.awt.geom.Point2D;
+import tj.TJ;
+import tj.TJPtCurve;
 import tj.TJScene;
+import tj.Command.TJCmdToAddCurPtCurveToPtCurves;
+import tj.Command.TJCmdToUpdateCurPtCurve;
 import x.XApp;
+import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJDrawScenario extends XScenario {
-
+    // singleton pattern
     private static TJDrawScenario mSingleton = null;
     public static TJDrawScenario getSingle() {
         assert(TJDrawScenario.mSingleton != null);
@@ -19,7 +25,6 @@ public class TJDrawScenario extends XScenario {
         TJDrawScenario.mSingleton = new TJDrawScenario(app);
         return TJDrawScenario.mSingleton;
     }
-
     private TJDrawScenario(XApp app) {
         super(app);
     }
@@ -30,6 +35,7 @@ public class TJDrawScenario extends XScenario {
     }
 
     public static class DrawScene extends TJScene {
+        // singleton pattern
         private static DrawScene mSingleton = null;
         public static DrawScene getSingleton() {
             assert(DrawScene.mSingleton != null);
@@ -40,49 +46,56 @@ public class TJDrawScenario extends XScenario {
             DrawScene.mSingleton = new DrawScene(scenario);
             return DrawScene.mSingleton;
         }
-
         private DrawScene(XScenario scenario) {
             super(scenario);
         }
-        @Override
-        public void getReady() {
-            // TODO Auto-generated method stub
-        }
-        @Override
-        public void wrapUp() {
-            // TODO Auto-generated method stub
-        }
+
         @Override
         public void handleMousePress(MouseEvent e) {
-            // TODO Auto-generated method stub
         }
+
         @Override
         public void handleMouseDrag(MouseEvent e) {
-            // TODO Auto-generated method stub
+            TJ TJ = (TJ)this.mScenario.getApp();
+            Point pt = e.getPoint();
+            
+            TJCmdToUpdateCurPtCurve.execute(TJ, pt);
         }
+
         @Override
         public void handleMouseRelease(MouseEvent e) {
-            // TODO Auto-generated method stub
+            TJ TJ = (TJ) this.mScenario.getApp();
+            TJCmdToAddCurPtCurveToPtCurves.execute(TJ);
+            
+            XCmdToChangeScene.execute(TJ, this.mReturnScene, null);
         }
+
         @Override
         public void handleKeyDown(KeyEvent e) {
-            // TODO Auto-generated method stub
         }
+
         @Override
         public void handleKeyUp(KeyEvent e) {
-            // TODO Auto-generated method stub
         }
+
         @Override
         public void updateSupportObjects() {
-            // TODO Auto-generated method stub
         }
+
         @Override
         public void renderWorldObjects(Graphics2D g2) {
-            // TODO Auto-generated method stub
         }
+
         @Override
         public void renderScreenObjects(Graphics2D g2) {
-            // TODO Auto-generated method stub
+        }
+
+        @Override
+        public void getReady() {
+        }
+
+        @Override
+        public void wrapUp() {
         }
     }
     
