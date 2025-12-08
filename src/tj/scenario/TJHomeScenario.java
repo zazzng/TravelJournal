@@ -1,22 +1,31 @@
 package tj.scenario;
 
+import utils.CircleButton;
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJPage;
 import tj.TJPageMgr;
 import tj.TJScene;
+import utils.CircleButton;
 import x.XApp;
+import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJHomeScenario extends XScenario {
@@ -34,6 +43,14 @@ public class TJHomeScenario extends XScenario {
     private static final Color PAGE_BORDER_COLOR = java.awt.Color.LIGHT_GRAY;
     private static final Stroke PAGE_BORDER_STROKE = new BasicStroke(1f);
     
+    // fields for icons
+    private Image mPrevIcon = null;
+    private Image mNextIcon = null;
+    private Image mLoadIcon = null;
+    private Image mSaveIcon = null;
+    private Image mDeleteIcon = null;
+    private Image mAddIcon = null;
+    
     // singleton pattern
     private static TJHomeScenario mSingleton = null;
     public static TJHomeScenario getSingle() {
@@ -47,6 +64,20 @@ public class TJHomeScenario extends XScenario {
     }
     private TJHomeScenario(XApp app) {
         super(app);
+        loadIcons();
+    }
+    
+    private void loadIcons() {
+        try {
+            mPrevIcon = ImageIO.read(getClass().getResourceAsStream("/assets/prev.png"));
+            mNextIcon = ImageIO.read(getClass().getResourceAsStream("/assets/next.png"));
+            mLoadIcon = ImageIO.read(getClass().getResourceAsStream("/assets/load.png"));
+            mSaveIcon = ImageIO.read(getClass().getResourceAsStream("/assets/save.png"));
+            mAddIcon = ImageIO.read(getClass().getResourceAsStream("/assets/add.png"));
+            mDeleteIcon = ImageIO.read(getClass().getResourceAsStream("/assets/delete.png"));
+        } catch (IOException | IllegalArgumentException e) {
+            System.err.println("ERROR: Failed to load navigation icons from classpath: " + e.getMessage());
+        }
     }
 
     @Override
@@ -56,7 +87,11 @@ public class TJHomeScenario extends XScenario {
 
     public static class CatalogueScene extends TJScene {
         // fields for UI components specific to this scene
-        private JPanel mCataloguePanel = null;
+        private JPanel mTopNavPanel = null;
+        private JLabel mTitle = new JLabel("User's Travel Journal");
+        
+        private JPanel mBottomNavPanel = null;
+        
         private JButton mLoadBtn;
         private JButton mSaveBtn;
         private JButton mAddBtn;
@@ -64,6 +99,7 @@ public class TJHomeScenario extends XScenario {
         
         private Rectangle mPrevNavBounds = null;
         private Rectangle mNextNavBounds = null;
+        private Rectangle mCurPageBounds = null;
         
         // singleton pattern
         private static CatalogueScene mSingleton = null;
@@ -74,22 +110,66 @@ public class TJHomeScenario extends XScenario {
         public static CatalogueScene createSingleton(XScenario scenario) {
             assert(CatalogueScene.mSingleton == null);
             CatalogueScene.mSingleton = new CatalogueScene(scenario);
-            CatalogueScene.mSingleton.initializeControls(); 
             return CatalogueScene.mSingleton;
         }
         private CatalogueScene(XScenario scenario) {
             super(scenario);
         }
         
-        private void initializeControls() {
+        private void initializeTopNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            int appHeight = tj.getCanvas2D().getHeight();
+            if (appHeight == 0) appHeight = 800;
+            int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
+            
+            this.mTopNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
+            this.mTopNavPanel.setBackground(TJCanvas2D.COLOR_BACKGROUND_LIGHT);
+            this.mTopNavPanel.setPreferredSize(new Dimension(0, topHeight));
+            
+            this.mTitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
+            this.mTitle.setForeground(new Color(50, 50, 50));
+            
+            this.mTopNavPanel.add(this.mTitle);
+        }
+        
+        private void initializeBottomNav() {
             TJ tj = (TJ)this.mScenario.getApp();
             TJPageMgr pageMgr = tj.getPageMgr();
+            TJHomeScenario home = (TJHomeScenario) this.mScenario;
+           
+            int appWidth = tj.getCanvas2D().getWidth();
+            int diameter = (int)(appWidth * TJHomeScenario.BUTTON_DIAMETER_RATIO);
+            if (diameter < 40) diameter = 40;
+            
+            int appHeight = tj.getCanvas2D().getHeight();
+            if (appHeight == 0) appHeight = 800;
+            int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
 
             // create buttons
-            mLoadBtn = new JButton("Load");
-            mSaveBtn = new JButton("Save");
-            mDeleteBtn = new JButton("- Delete");
-            mAddBtn = new JButton("+ Add");
+            mLoadBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                home.mLoadIcon, diameter);
+            mSaveBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                home.mSaveIcon, diameter);
+            mDeleteBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                home.mDeleteIcon, diameter);
+            mAddBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                home.mAddIcon, diameter);
+            
+            mLoadBtn.setToolTipText("Load Journal");
+            mSaveBtn.setToolTipText("Save Journal");
+            mDeleteBtn.setToolTipText("Delete Page");
+            mAddBtn.setToolTipText("Add Page");
+            
+            // create panel and add buttons
+            mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
+            mBottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_BACKGROUND_LIGHT);
+            mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
+            
+            mBottomNavPanel.add(mLoadBtn);
+            mBottomNavPanel.add(mSaveBtn);
+            mBottomNavPanel.add(mAddBtn);
+            mBottomNavPanel.add(mDeleteBtn);
 
             // connect actions
             mLoadBtn.addActionListener(e -> {
@@ -102,34 +182,28 @@ public class TJHomeScenario extends XScenario {
             mSaveBtn.addActionListener(e -> tj.getPageMgr().saveJournal());
             mAddBtn.addActionListener(e -> pageMgr.addEmptyPage());
             mDeleteBtn.addActionListener(e -> pageMgr.deleteCurPage());
-            
-            // create panel and add buttons
-            mCataloguePanel = new JPanel(new FlowLayout());
-            mCataloguePanel.add(mLoadBtn);
-            mCataloguePanel.add(mSaveBtn);
-            mCataloguePanel.add(mAddBtn);
-            mCataloguePanel.add(mDeleteBtn);
-            
-            // set style
-            mCataloguePanel.setBorder(BorderFactory.createEmptyBorder(25, 0, 25, 0));
-            mCataloguePanel.setBackground(new Color(220, 220, 220)); 
         }
         
-        private void updateNavigationBounds(int pageHeight, int pageWidth, int startX, int startY, int appWidth) {
+        private void updateBounds(int pageHeight, int pageWidth, int startX, int startY, int appWidth) {
             // button dimensions
             int navDiameter = (int)(appWidth * TJHomeScenario.BUTTON_DIAMETER_RATIO);
             int navWidth = navDiameter;
             int navHeight = navDiameter;
             
             int navY = startY + (pageHeight / 2) - (navHeight / 2);
+            int spacing = (int)(0.05 * appWidth);
 
             // previous button (left of the book)
-            int prevX = startX - navWidth - 50; // 10px margin
-            mPrevNavBounds = new Rectangle(prevX, navY, navWidth, navHeight);
+            int prevX = startX - navWidth - spacing;
+            this.mPrevNavBounds = new Rectangle(prevX, navY, navWidth, navHeight);
             
             // next button (right of the book)
-            int nextX = startX + pageWidth * 2 + 50; // 10px margin
-            mNextNavBounds = new Rectangle(nextX, navY, navWidth, navHeight);
+            int nextX = startX + pageWidth * 2 + spacing;
+            this.mNextNavBounds = new Rectangle(nextX, navY, navWidth, navHeight);
+            
+            // cur page bounds
+            this.mCurPageBounds = new Rectangle(startX, startY, pageWidth * 2,
+                pageHeight);
         }
 
         @Override
@@ -143,7 +217,7 @@ public class TJHomeScenario extends XScenario {
             int totalPages = pageMgr.getJournalPages().size();
             
             // 1. click on previous button
-            if (mPrevNavBounds != null && mPrevNavBounds.contains(mx, my)) {
+            if (this.mPrevNavBounds != null && this.mPrevNavBounds.contains(mx, my)) {
                 if (curIndex > 0) { 
                     pageMgr.setCurPageIndex(curIndex - 1);
                 }
@@ -151,14 +225,18 @@ public class TJHomeScenario extends XScenario {
             }
             
             // 2. click on next button
-            if (mNextNavBounds != null && mNextNavBounds.contains(mx, my)) {
+            if (this.mNextNavBounds != null && this.mNextNavBounds.contains(mx, my)) {
                 if (curIndex < totalPages - 1) { 
                     pageMgr.setCurPageIndex(curIndex + 1);
                 }
                 return;
             }
             
-            // 3. click on the page 
+            // 3. click on the page
+            if (this.mCurPageBounds != null && this.mCurPageBounds.contains(mx, my)) {
+                XCmdToChangeScene.execute(tj,
+                    TJDefaultScenario.ReadyScene.getSingleton(), null);
+            }
         }
 
         @Override
@@ -196,7 +274,7 @@ public class TJHomeScenario extends XScenario {
             int bookHeight = pageHeight;
             int startX = (appWidth - pageWidth * 2) / 2;
             int startY = (appHeight - bookHeight) / 2;
-            updateNavigationBounds(pageHeight, pageWidth, startX, startY, appWidth);
+            updateBounds(pageHeight, pageWidth, startX, startY, appWidth);
             
             scenario.drawJournalBook(g2);
             scenario.drawNavigationButtons(g2);
@@ -209,14 +287,25 @@ public class TJHomeScenario extends XScenario {
         @Override
         public void getReady() {
             TJ tj = (TJ)this.mScenario.getApp();
-            tj.setControlPanel(this.mCataloguePanel);
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
+            
             updateSupportObjects();
         }
 
         @Override
         public void wrapUp() {
             TJ tj = (TJ)this.mScenario.getApp();
-            tj.setControlPanel(null);
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
     }
     
@@ -315,12 +404,15 @@ public class TJHomeScenario extends XScenario {
         g2.setColor(prevColor);
         g2.fillOval(prev.x, prev.y, prev.width, prev.height);
         
-        g2.setColor(Color.WHITE);
-        String prevLabel = "<";
-        int strWidth = g2.getFontMetrics().stringWidth(prevLabel);
-        int strHeight = g2.getFontMetrics().getAscent();
-        g2.drawString(prevLabel, prev.x + prev.width/2 - strWidth/2, 
-            prev.y + prev.height/2 + strHeight/4);
+        if (mPrevIcon != null) {
+            int pad = (int)(prev.width * 0.2); 
+            g2.drawImage(mPrevIcon, prev.x + pad, prev.y + pad, 
+                (int)(prev.width * 0.6), (int)(prev.height * 0.6), null);
+        } else {
+            // fallback text
+            g2.setColor(Color.WHITE);
+            g2.drawString("<", prev.x + prev.width/2 - 5, prev.y + prev.height/2 + 5);
+        }
 
         Rectangle next = scene.mNextNavBounds;
         Color nextColor = (curIndex < totalPages - 1) ? ACTIVE_BUTTON_COLOR : DISABLED_BUTTON_COLOR;
@@ -328,11 +420,15 @@ public class TJHomeScenario extends XScenario {
         g2.setColor(nextColor);
         g2.fillOval(next.x, next.y, next.width, next.height);
         
-        g2.setColor(Color.WHITE);
-        String nextLabel = ">";
-        strWidth = g2.getFontMetrics().stringWidth(nextLabel);
-        strHeight = g2.getFontMetrics().getAscent();
-        g2.drawString(nextLabel, next.x + next.width/2 - strWidth/2, 
-            next.y + next.height/2 + strHeight/4);
+        if (mNextIcon != null) {
+            int pad = (int)(next.width * 0.2);
+            g2.drawImage(mNextIcon, next.x + pad, next.y + pad, 
+                         (int)(next.width * 0.6), (int)(next.height * 0.6), null);
+        } else {
+            // fallback text
+            System.out.println("gaada next icon");
+            g2.setColor(Color.WHITE);
+            g2.drawString(">", next.x + next.width/2 - 5, next.y + next.height/2 + 5);
+        }
     }
 }

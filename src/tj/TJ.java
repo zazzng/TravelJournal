@@ -20,9 +20,14 @@ public class TJ extends XApp {
         return this.mCanvas2D;
     }
     
-    private JPanel mCurControlPanel = null;
-    public JPanel getCurControlPanel() {
-        return this.mCurControlPanel;
+    private JPanel mTopPanel = null;
+    public JPanel getCurTopPanel() {
+        return this.mTopPanel;
+    }
+    
+    private JPanel mBottomPanel = null;
+    public JPanel getCurBottomPanel() {
+        return this.mBottomPanel;
     }
     
     private TJEventListener mEventListener = null;
@@ -86,18 +91,35 @@ public class TJ extends XApp {
         this.mFrame.setVisible(true);
     }
     
-    public void setControlPanel(JPanel newPanel) {
-        if (this.mCurControlPanel != null) {
-            this.mFrame.remove(this.mCurControlPanel);
+    public void setTopPanel(JPanel newPanel) {
+        if (this.mTopPanel != null) {
+            this.mFrame.remove(this.mTopPanel);
         }
         
-        this.mCurControlPanel = newPanel;
+        this.mTopPanel = newPanel;
         
-        if (this.mCurControlPanel != null) {
-            this.mFrame.add(this.mCurControlPanel, BorderLayout.SOUTH);
+        if (this.mTopPanel != null) {
+            this.mFrame.add(this.mTopPanel, BorderLayout.NORTH);
         }
         
-        // Revalidate and repaint the frame to apply the layout change
+        refreshFrame();
+    }
+    
+    public void setBottomPanel(JPanel newPanel) {
+        if (this.mBottomPanel != null) {
+            this.mFrame.remove(this.mBottomPanel);
+        }
+        
+        this.mBottomPanel = newPanel;
+        
+        if (this.mBottomPanel != null) {
+            this.mFrame.add(this.mBottomPanel, BorderLayout.SOUTH);
+        }
+        
+        refreshFrame();
+    }
+    
+    private void refreshFrame() {
         this.mFrame.revalidate();
         this.mFrame.repaint();
     }

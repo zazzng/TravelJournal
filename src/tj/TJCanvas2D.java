@@ -12,9 +12,14 @@ import javax.swing.JPanel;
 public class TJCanvas2D extends JPanel {
     // constants
     private static final Color COLOR_PT_CURVE_DEFAULT = new Color(0, 0, 0);
+    public static final Color COLOR_BACKGROUND_LIGHT = new Color(220, 220, 220);
+    public static final Color COLOR_BACKGROUND_DARK = new Color(45, 45, 45);
+    public static final Color COLOR_PANEL_BACKGROUND_DARK = new Color(27, 27, 27);
 
     private static final Stroke STROKE_PT_CURVE_DEFAULT = new BasicStroke(5f);
     
+    public static final double TOP_NAV_RATIO = 0.065;
+    public static final double BOTTOM_NAV_RATIO = 0.1;
     public static final double PAGE_ASPECT_RATIO = 0.75;
 
     // fields

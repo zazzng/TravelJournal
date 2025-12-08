@@ -1,5 +1,7 @@
 package tj;
 
+import tj.scenario.TJDefaultScenario;
+import tj.scenario.TJDrawScenario;
 import tj.scenario.TJHomeScenario;
 import x.XScenarioMgr;
 
@@ -12,6 +14,8 @@ public class TJScenarioMgr extends XScenarioMgr {
     @Override
     protected void addScenario() {
         this.addScenario(TJHomeScenario.createSingleton(this.mApp));
+        this.addScenario(TJDefaultScenario.createSingleton(this.mApp));
+        this.addScenario(TJDrawScenario.createSingleton(this.mApp));
     }
 
     @Override
