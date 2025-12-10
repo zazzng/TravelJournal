@@ -7,6 +7,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
@@ -19,6 +21,7 @@ import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJPage;
 import tj.TJScene;
+import tj.cmd.TJCmdToCreateCurPtCurve;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
@@ -55,6 +58,10 @@ public class TJDefaultScenario extends XScenario {
         private JButton mColorBtn;
         private JButton mImageBtn;
         private JButton mEmojiBtn;
+        
+        private Rectangle mLeftPageBounds = null;
+        private Rectangle mRightPageBounds = null;
+        private TJPage mTargetPage = null;
 
         // singleton pattern
         private static ReadyScene mSingleton = null;
@@ -131,7 +138,7 @@ public class TJDefaultScenario extends XScenario {
             
             mPenBtn.addActionListener(e -> {
                 XCmdToChangeScene.execute(tj, 
-                    TJDrawScenario.DrawScene.getSingleton(), 
+                    TJDrawScenario.DrawReadyScene.getSingleton(), 
                     this);
             });
 
@@ -150,6 +157,14 @@ public class TJDefaultScenario extends XScenario {
 //                    TJEmojiScenario.EmojiReadyScene.getSingleton(), 
 //                    this);
             });
+        }
+        
+        public void drawBackground(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
 
         @Override
@@ -225,8 +240,8 @@ public class TJDefaultScenario extends XScenario {
         @Override
         public void wrapUp() {
             TJ tj = (TJ)this.mScenario.getApp();
-            tj.setTopPanel(null);
-            tj.setBottomPanel(null);
+//            tj.setTopPanel(null);
+//            tj.setBottomPanel(null);
         }
 
     }

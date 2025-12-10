@@ -7,50 +7,49 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import tj.TJ;
-import tj.TJCanvas2D;
 import tj.TJScene;
 import x.XApp;
 import x.XScenario;
 
-public class TJEmptyScenario extends XScenario {
+public class TJSelectScenario extends XScenario {
     // singleton pattern
-    private static TJEmptyScenario mSingleton = null;
-    public static TJEmptyScenario getSingle() {
-        assert(TJEmptyScenario.mSingleton != null);
-        return TJEmptyScenario.mSingleton;
+    private static TJSelectScenario mSingleton = null;
+    public static TJSelectScenario getSingle() {
+        assert(TJSelectScenario.mSingleton != null);
+        return TJSelectScenario.mSingleton;
     }
-    public static TJEmptyScenario createSingleton(XApp app) {
-        assert(TJEmptyScenario.mSingleton == null);
-        TJEmptyScenario.mSingleton = new TJEmptyScenario(app);
-        return TJEmptyScenario.mSingleton;
+    public static TJSelectScenario createSingleton(XApp app) {
+        assert(TJSelectScenario.mSingleton == null);
+        TJSelectScenario.mSingleton = new TJSelectScenario(app);
+        return TJSelectScenario.mSingleton;
     }
-    private TJEmptyScenario(XApp app) {
+    private TJSelectScenario(XApp app) {
         super(app);
     }
 
     @Override
     protected void addScenes() {
-        this.addScene(TJEmptyScenario.EmptyScene.createSingleton(this));
+        this.addScene(TJSelectScenario.SelectReadyScene.createSingleton(this));
     }
 
-    public static class EmptyScene extends TJScene {
+    public static class SelectReadyScene extends TJScene {
         // UI Components
         private JPanel mTopNavPanel;
         
         private JPanel mBottomNavPanel;
         
         // singleton pattern
-        private static EmptyScene mSingleton = null;
-        public static EmptyScene getSingleton() {
-            assert(EmptyScene.mSingleton != null);
-            return EmptyScene.mSingleton;
+        private static SelectReadyScene mSingleton = null;
+        public static SelectReadyScene getSingleton() {
+            assert(SelectReadyScene.mSingleton != null);
+            return SelectReadyScene.mSingleton;
         }
-        public static EmptyScene createSingleton(XScenario scenario) {
-            assert(EmptyScene.mSingleton == null);
-            EmptyScene.mSingleton = new EmptyScene(scenario);
-            return EmptyScene.mSingleton;
+        public static SelectReadyScene createSingleton(XScenario scenario) {
+            assert(SelectReadyScene.mSingleton == null);
+            SelectReadyScene.mSingleton = new SelectReadyScene(scenario);
+            return SelectReadyScene.mSingleton;
         }
-        private EmptyScene(XScenario scenario) {
+        private SelectReadyScene(XScenario scenario) {
             super(scenario);
         }
         
@@ -86,15 +85,6 @@ public class TJEmptyScenario extends XScenario {
         @Override
         public void updateSupportObjects() {
         }
-        
-        @Override
-        public void drawBackground(Graphics2D g2) {
-            TJ tj = (TJ)this.mScenario.getApp();
-            TJCanvas2D canvas = tj.getCanvas2D();
-            
-            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
-            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-        }
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
@@ -124,6 +114,11 @@ public class TJEmptyScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
 //            tj.setTopPanel(null);
 //            tj.setBottomPanel(null);
+        }
+
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     }
 }

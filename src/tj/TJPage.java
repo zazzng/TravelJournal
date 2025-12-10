@@ -11,16 +11,22 @@ public class TJPage implements Serializable {
     public static final TJPage BLANK_HIDDEN_PAGE = new TJPage(false);
     
     // fields: what goes on the journal page
-    private ArrayList<TJPenMark> mPenMarks;
-    public ArrayList<TJPenMark> getPenMarks() {
-        return this.mPenMarks;
+    private ArrayList<TJPtCurve> mPtCurves;
+    public ArrayList<TJPtCurve> getPtCurves() {
+        return this.mPtCurves;
+    }
+    
+    private ArrayList<TJPtCurve> mSelectedPtCurves;
+    public ArrayList<TJPtCurve> getSelectedPtCurves() {
+        return this.mSelectedPtCurves;
     }
     
     private boolean mIsEditable = true;
     
     // private constructor
     private TJPage(boolean isEditable) {
-        this.mPenMarks = new ArrayList<>();
+        this.mPtCurves = new ArrayList<>();
+        this.mSelectedPtCurves = new ArrayList<>();
         this.mIsEditable = isEditable;
     }
     // public constructor to create editable pages
@@ -34,6 +40,6 @@ public class TJPage implements Serializable {
     
     public boolean isContentEmpty() {
         // TODO: update this as the functionality increase
-        return this.mPenMarks.isEmpty();
+        return this.mPtCurves.isEmpty();
     }
 }

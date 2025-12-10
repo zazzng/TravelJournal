@@ -12,6 +12,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -30,6 +31,7 @@ import x.XScenario;
 
 public class TJHomeScenario extends XScenario {
     // constants
+    private static final double PAGE_HEIGHT_RATIO = 0.7;
     private static final double HIDDEN_PAGE_RATIO = 0.94;
     private static final double HIDDEN_PAGE_OFFSET_X = 0.075;
     private static final double HIDDEN_PAGE_OFFSET_Y = 0.03;
@@ -41,7 +43,7 @@ public class TJHomeScenario extends XScenario {
     private static final Color ACTIVE_BUTTON_COLOR = new Color(50, 50, 50);
     private static final Color DISABLED_BUTTON_COLOR = new Color(215, 215, 215);
     private static final Color PAGE_BORDER_COLOR = java.awt.Color.LIGHT_GRAY;
-    private static final Stroke PAGE_BORDER_STROKE = new BasicStroke(1f);
+    public static final Stroke PAGE_BORDER_STROKE = new BasicStroke(1f);
     
     // fields for icons
     private Image mPrevIcon = null;
@@ -123,7 +125,7 @@ public class TJHomeScenario extends XScenario {
             int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
             
             this.mTopNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
-            this.mTopNavPanel.setBackground(TJCanvas2D.COLOR_BACKGROUND_LIGHT);
+            this.mTopNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             this.mTopNavPanel.setPreferredSize(new Dimension(0, topHeight));
             
             this.mTitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
@@ -163,7 +165,7 @@ public class TJHomeScenario extends XScenario {
             // create panel and add buttons
             mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
             mBottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_BACKGROUND_LIGHT);
+            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
             
             mBottomNavPanel.add(mLoadBtn);
@@ -259,6 +261,15 @@ public class TJHomeScenario extends XScenario {
         @Override
         public void updateSupportObjects() {
         }
+        
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_LIGHT); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        }
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
@@ -269,11 +280,18 @@ public class TJHomeScenario extends XScenario {
             
             int appWidth = canvas.getWidth();
             int appHeight = canvas.getHeight();
-            int pageHeight = (int)(appHeight * 0.7);
+            
+            int pageHeight = (int)(appHeight * TJHomeScenario.PAGE_HEIGHT_RATIO);
             int pageWidth = (int)(pageHeight * TJCanvas2D.PAGE_ASPECT_RATIO);
             int bookHeight = pageHeight;
             int startX = (appWidth - pageWidth * 2) / 2;
             int startY = (appHeight - bookHeight) / 2;
+            
+            double scale = (double)pageHeight / TJPageMgr.WORLD_PAGE_HEIGHT;
+            
+            double transX = (double)startX;
+            double transY = (double)startY;
+            
             updateBounds(pageHeight, pageWidth, startX, startY, appWidth);
             
             scenario.drawJournalBook(g2);
@@ -334,7 +352,7 @@ public class TJHomeScenario extends XScenario {
         int appWidth = canvas.getWidth();
         int appHeight = canvas.getHeight();
         
-        int pageHeight = (int)(appHeight * 0.7);
+        int pageHeight = (int)(appHeight * TJHomeScenario.PAGE_HEIGHT_RATIO);
         int pageWidth = (int)(pageHeight * TJCanvas2D.PAGE_ASPECT_RATIO);
         int hiddenPageHeight = (int)(pageHeight * TJHomeScenario.HIDDEN_PAGE_RATIO);
         int hiddenPageWidth = (int)(pageWidth * TJHomeScenario.HIDDEN_PAGE_RATIO);
@@ -384,6 +402,34 @@ public class TJHomeScenario extends XScenario {
         // current right page
         drawSinglePage(g2, curPage[1], rightPageX, startY, pageWidth, pageHeight, 
             CURRENT_PAGE_COLOR);
+        
+        double drawModeRatio = TJDrawScenario.PAGE_HEIGHT_RATIO; // 0.85
+        int drawModeH = (int)(appHeight * drawModeRatio);
+        int drawModeW = (int)(drawModeH * TJCanvas2D.PAGE_ASPECT_RATIO);
+        int drawModeX = (appWidth - drawModeW * 2) / 2;
+        int drawModeY = (appHeight - drawModeH) / 2;
+        
+        double scale = (double) pageHeight / drawModeH;
+        
+        AffineTransform oldAT = g2.getTransform();
+        AffineTransform at = new AffineTransform();
+        
+        // 3. Move to the new (Home) position
+        at.translate(startX, startY);
+        // 2. Scale the content
+        at.scale(scale, scale);
+        // 1. Move from the original (Draw) position to 0,0
+        at.translate(-drawModeX, -drawModeY);
+        
+        g2.transform(at);
+        
+        canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+        canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+        canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+        canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+        
+        g2.setTransform(oldAT);
     }
     
     public void drawNavigationButtons(Graphics2D g2) {

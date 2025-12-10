@@ -14,6 +14,8 @@ public class TJPageMgr implements Serializable {
     // constants
     private static final long serialVersionUID = 1L;
     private static final String FILE_NAME = "journal.dat"; // file name
+    public static final double WORLD_PAGE_WIDTH = 900;
+    public static final double WORLD_PAGE_HEIGHT = 1200;
     
     // fields
     private TJ mTJ = null;

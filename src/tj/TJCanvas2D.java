@@ -4,23 +4,41 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
 public class TJCanvas2D extends JPanel {
     // constants
     private static final Color COLOR_PT_CURVE_DEFAULT = new Color(0, 0, 0);
-    public static final Color COLOR_BACKGROUND_LIGHT = new Color(220, 220, 220);
+    private static final Color COLOR_SELECTED_PT_CURVE = Color.ORANGE;
+    public static final Color COLOR_SELECTION_BOX = new Color(255, 0, 0, 64);
+    public static final Color COLOR_CROSS_HAIR = new Color(255, 0, 0, 64);
+    
+    public static final Color COLOR_BACKGROUND_LIGHT = new Color(245, 245, 245);
+    public static final Color COLOR_PANEL_BACKGROUND_LIGHT = new Color(220, 220, 220);
     public static final Color COLOR_BACKGROUND_DARK = new Color(45, 45, 45);
     public static final Color COLOR_PANEL_BACKGROUND_DARK = new Color(27, 27, 27);
 
     private static final Stroke STROKE_PT_CURVE_DEFAULT = new BasicStroke(5f);
+    public static final Stroke STROKE_SELECTION_BOX = new BasicStroke(5f);
+    public static final Stroke STROKE_CROSS_HAIR = new BasicStroke(2f);
     
     public static final double TOP_NAV_RATIO = 0.065;
     public static final double BOTTOM_NAV_RATIO = 0.1;
     public static final double PAGE_ASPECT_RATIO = 0.75;
+    
+    private static final int PAGE_CORNER_ARC = 25;
+    private static final double PEN_TIP_OFFSET = 30.0;
+    public static final float STROKE_WIDTH_INCREMENT = 1f;
+    public static final float STROKE_MIN_WIDTH = 1f;
 
     // fields
     private TJ mTJ = null;
@@ -51,17 +69,98 @@ public class TJCanvas2D extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
             RenderingHints.VALUE_ANTIALIAS_ON);
         
+        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
+        curScene.drawBackground(g2);
+        
+        g2.transform(this.mTJ.getXform().getCurrentXformFromWorldToScreen());
+        
         // common world objects
         
         // current scene's world objects
-        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
         curScene.renderWorldObjects(g2);
+        
+        g2.transform(this.mTJ.getXform().getCurrentXformFromScreenToWorld());
         
         // common screen objects
         
-        // current scene's world obkects
+        // current scene's screen obkects
         curScene.renderScreenObjects(g2);
+        
     }
     
+    private void drawSpread(Graphics2D g2) {
+        // Draw the standard 1800x1200 spread in World Coordinates
+        double width = TJPageMgr.WORLD_PAGE_WIDTH;
+        double height = TJPageMgr.WORLD_PAGE_HEIGHT;
+        
+        // Left Page (0, 0)
+        g2.setColor(Color.WHITE);
+        g2.fill(new RoundRectangle2D.Double(0, 0, width, height,
+            TJCanvas2D.PAGE_CORNER_ARC, TJCanvas2D.PAGE_CORNER_ARC));
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.setStroke(new BasicStroke(1f));
+        g2.draw(new RoundRectangle2D.Double(0, 0, width, height,
+            TJCanvas2D.PAGE_CORNER_ARC, TJCanvas2D.PAGE_CORNER_ARC));
+        
+        // Right Page (900, 0)
+        g2.setColor(Color.WHITE);
+        g2.fill(new RoundRectangle2D.Double(width, 0, width, height,
+            TJCanvas2D.PAGE_CORNER_ARC, TJCanvas2D.PAGE_CORNER_ARC));
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.draw(new RoundRectangle2D.Double(width, 0, width, height,
+            TJCanvas2D.PAGE_CORNER_ARC, TJCanvas2D.PAGE_CORNER_ARC));
+        
+        // Divider
+        g2.setColor(new Color(200, 200, 200));
+        g2.setStroke(new BasicStroke(2.0f));
+        g2.draw(new java.awt.geom.Line2D.Double(width, 0, width, height));
+    }
     
+    private void drawPtCurve(
+        Graphics2D g2, TJPtCurve ptCurve, Color c, Stroke s) {
+        // draw a single saved point curve
+        Path2D.Double path = new Path2D.Double();
+        ArrayList<Point2D.Double> pts = ptCurve.getPts();
+        if(pts.size() < 2) {
+            return;
+        }
+        
+        Point2D.Double pt0 = pts.get(0);
+        path.moveTo(pt0.x, pt0.y);
+        for (int i = 1; i < pts.size(); i++) {
+            Point2D.Double pt = pts.get(i);
+            path.lineTo(pt.x, pt.y);
+        }
+        
+        g2.setColor(c);
+        g2.setStroke(s);
+        g2.draw(path);
+    }
+
+    public void drawPtCurves(Graphics2D g2, ArrayList<TJPtCurve> ptCurves) {
+        // draw all saved point curves
+        for (TJPtCurve ptCurve : ptCurves) {
+            this.drawPtCurve(g2, ptCurve, ptCurve.getColor(), 
+                ptCurve.getStroke());
+        }
+    }
+    
+    public void drawSelectedPtCurves(Graphics2D g2, ArrayList<TJPtCurve> selectedPtCurves) {
+        // draw the selected point curves
+        for (TJPtCurve selectedPtCurve : selectedPtCurves) {
+            this.drawPtCurve(g2, selectedPtCurve,
+                TJCanvas2D.COLOR_SELECTED_PT_CURVE,
+                selectedPtCurve.getStroke());
+        }
+    }
+    
+    public void drawCurPtCurve(Graphics2D g2) {
+        // draw current point curve
+        TJPtCurve ptCurve = this.mTJ.getPtCurveMgr().getCurPtCurve();
+        if (ptCurve != null) {
+            this.drawPtCurve(g2, ptCurve, ptCurve.getColor(),
+                ptCurve.getStroke());
+        }
+    }
+
 }

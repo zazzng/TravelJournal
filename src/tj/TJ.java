@@ -30,6 +30,16 @@ public class TJ extends XApp {
         return this.mBottomPanel;
     }
     
+    private TJXform mXform = null;
+    public TJXform getXform() {
+        return this.mXform;
+    }
+    
+    private TJColorChooser mColorChooser = null;
+    public TJColorChooser getColorChooser() {
+        return this.mColorChooser;
+    }
+    
     private TJEventListener mEventListener = null;
     public TJEventListener getEventListener() {
         return this.mEventListener;
@@ -38,6 +48,16 @@ public class TJ extends XApp {
     private TJPageMgr mPageMgr = null;
     public TJPageMgr getPageMgr() {
         return this.mPageMgr;
+    }
+    
+    private TJPenMarkMgr mPenMarkMgr = null;
+    public TJPenMarkMgr getPenMarkMgr() {
+        return this.mPenMarkMgr;
+    }
+    
+    private TJPtCurveMgr mPtCurveMgr = null;
+    public TJPtCurveMgr getPtCurveMgr() {
+        return this.mPtCurveMgr;
     }
 
     private XScenarioMgr mScenarioMgr = null;
@@ -59,8 +79,12 @@ public class TJ extends XApp {
         this.mFrame = new JFrame("TravelJournal");
         this.mFrame.setLayout(new BorderLayout());
         this.mCanvas2D = new TJCanvas2D(this);
+        this.mXform = new TJXform();
+        this.mColorChooser = new TJColorChooser();
         this.mEventListener = new TJEventListener(this);
         this.mPageMgr = new TJPageMgr(this);
+        this.mPenMarkMgr = new TJPenMarkMgr();
+        this.mPtCurveMgr = new TJPtCurveMgr();
         this.mScenarioMgr = new TJScenarioMgr(this);
         this.mLogMgr = new XLogMgr();
         this.mLogMgr.setPrintOn(true);
