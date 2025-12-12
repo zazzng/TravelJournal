@@ -33,6 +33,8 @@ public class TJCanvas2D extends JPanel {
     
     public static final double TOP_NAV_RATIO = 0.065;
     public static final double BOTTOM_NAV_RATIO = 0.1;
+    public static final double PAGE_VIEW_HEIGHT_RATIO = 0.7;
+    public static final double PAGE_EDIT_HEIGHT_RATIO = 0.85;
     public static final double PAGE_ASPECT_RATIO = 0.75;
     
     private static final int PAGE_CORNER_ARC = 25;
@@ -145,7 +147,8 @@ public class TJCanvas2D extends JPanel {
         }
     }
     
-    public void drawSelectedPtCurves(Graphics2D g2, ArrayList<TJPtCurve> selectedPtCurves) {
+    public void drawSelectedPtCurves(Graphics2D g2,
+        ArrayList<TJPtCurve> selectedPtCurves) {
         // draw the selected point curves
         for (TJPtCurve selectedPtCurve : selectedPtCurves) {
             this.drawPtCurve(g2, selectedPtCurve,
@@ -160,6 +163,12 @@ public class TJCanvas2D extends JPanel {
         if (ptCurve != null) {
             this.drawPtCurve(g2, ptCurve, ptCurve.getColor(),
                 ptCurve.getStroke());
+        }
+    }
+    
+    public void drawImages(Graphics2D g2, ArrayList<TJImage> images) {
+        for (TJImage img : images) {
+            img.draw(g2);
         }
     }
 

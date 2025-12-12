@@ -22,6 +22,7 @@ import tj.TJCanvas2D;
 import tj.TJPage;
 import tj.TJScene;
 import tj.cmd.TJCmdToCreateCurPtCurve;
+import utils.TJNavPanel;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
@@ -50,14 +51,7 @@ public class TJDefaultScenario extends XScenario {
     public static class ReadyScene extends TJScene {
         // UI Components
         private JPanel mTopNavPanel;
-        private JButton mBackBtn;
-        private JLabel mTitleLabel;
-        
         private JPanel mBottomNavPanel;
-        private JButton mPenBtn;
-        private JButton mColorBtn;
-        private JButton mImageBtn;
-        private JButton mEmojiBtn;
         
         private Rectangle mLeftPageBounds = null;
         private Rectangle mRightPageBounds = null;
@@ -78,85 +72,14 @@ public class TJDefaultScenario extends XScenario {
             super(scenario);
         }
         
-        private void initializeTopNav() {
+        public void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            int appHeight = tj.getCanvas2D().getHeight();
-            if (appHeight == 0) appHeight = 800; // Fallback
-            
-            int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
-            
-            mTopNavPanel = new JPanel(new BorderLayout());
-            mTopNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_DARK);
-            mTopNavPanel.setPreferredSize(new Dimension(0, topHeight));
-            
-            mBackBtn = new JButton("< Back");
-            mBackBtn.setFont(new Font("SansSerif", Font.PLAIN, 14));
-            mBackBtn.setForeground(Color.WHITE);
-            
-            mBackBtn.setFocusPainted(false);
-            mBackBtn.setContentAreaFilled(false);
-            mBackBtn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
-            
-            mTitleLabel = new JLabel("Untitled Page", SwingConstants.CENTER);
-            mTitleLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
-            mTitleLabel.setForeground(Color.WHITE);
-            
-            mTopNavPanel.add(mBackBtn, BorderLayout.WEST);
-            mTopNavPanel.add(mTitleLabel, BorderLayout.CENTER);
-            
-            // dummy label to balance the center title
-            JLabel dummy = new JLabel("       ");
-            dummy.setPreferredSize(new Dimension(80, 0)); 
-            mTopNavPanel.add(dummy, BorderLayout.EAST);
-            
-            mBackBtn.addActionListener(e -> {
-                XCmdToChangeScene.execute(tj,
-                    TJHomeScenario.CatalogueScene.getSingleton(), null);
-            });
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
         }
 
-        private void initializeBottomNav() {
+        public void initializeBottomNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            int appHeight = tj.getCanvas2D().getHeight();
-            if (appHeight == 0) appHeight = 800;
-            int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
-            
-            mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
-            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_DARK);
-            mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
-            mBottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-            
-            mPenBtn = new JButton("Pen");
-            mColorBtn = new JButton("Color");
-            mImageBtn = new JButton("Add Image");
-            mEmojiBtn = new JButton("Emoji");
-
-            mBottomNavPanel.add(mPenBtn);
-            mBottomNavPanel.add(mColorBtn);
-            mBottomNavPanel.add(mImageBtn);
-            mBottomNavPanel.add(mEmojiBtn);
-            
-            mPenBtn.addActionListener(e -> {
-                XCmdToChangeScene.execute(tj, 
-                    TJDrawScenario.DrawReadyScene.getSingleton(), 
-                    this);
-            });
-
-            mColorBtn.addActionListener(e -> {
-//                XCmdToChangeScene.execute(tj, 
-//                    TJColorScenario.ColorChangeScene.getSingleton(), 
-//                    this);
-            });
-
-            mImageBtn.addActionListener(e -> {
-                
-            });
-            
-            mEmojiBtn.addActionListener(e -> {
-//                XCmdToChangeScene.execute(tj, 
-//                    TJEmojiScenario.EmojiReadyScene.getSingleton(), 
-//                    this);
-            });
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
         }
         
         public void drawBackground(Graphics2D g2) {
@@ -240,8 +163,8 @@ public class TJDefaultScenario extends XScenario {
         @Override
         public void wrapUp() {
             TJ tj = (TJ)this.mScenario.getApp();
-//            tj.setTopPanel(null);
-//            tj.setBottomPanel(null);
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
 
     }

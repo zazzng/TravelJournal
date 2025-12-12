@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.JPanel;
 import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJPage;
@@ -15,14 +16,12 @@ import tj.TJScene;
 import tj.cmd.TJCmdToAddCurPtCurveToPtCurves;
 import tj.cmd.TJCmdToCreateCurPtCurve;
 import tj.cmd.TJCmdToUpdateCurPtCurve;
+import utils.TJNavPanel;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJDrawScenario extends XScenario {
-    // constant
-    public static final double PAGE_HEIGHT_RATIO = 0.85;
-    
     private TJPage mTargetPage = null;
     private Rectangle mTargetBounds = null;
     public Rectangle getTargetBounds() {
@@ -58,7 +57,7 @@ public class TJDrawScenario extends XScenario {
         TJCanvas2D canvas = tj.getCanvas2D();
         int appWidth = canvas.getWidth();
         int appHeight = canvas.getHeight();
-        int pageHeight = (int)(appHeight * TJDrawScenario.PAGE_HEIGHT_RATIO); 
+        int pageHeight = (int)(appHeight * TJCanvas2D.PAGE_EDIT_HEIGHT_RATIO); 
         int pageWidth = (int)(pageHeight * TJCanvas2D.PAGE_ASPECT_RATIO);
         int startX = (appWidth - pageWidth * 2) / 2;
         int startY = (appHeight - pageHeight) / 2;
@@ -74,6 +73,10 @@ public class TJDrawScenario extends XScenario {
     }
     
     public static class DrawReadyScene extends TJScene {
+        // UI components
+        private JPanel mTopNavPanel;
+        private JPanel mBottomNavPanel;
+        
         private static DrawReadyScene mSingleton = null;
         public static DrawReadyScene getSingleton() {
             assert(DrawReadyScene.mSingleton != null);
@@ -90,11 +93,13 @@ public class TJDrawScenario extends XScenario {
         }
         
         private void initializeTopNav() {
-            
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
         }
         
         private void initializeBottomNav() {
-            
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
         }
 
         @Override
@@ -175,15 +180,34 @@ public class TJDrawScenario extends XScenario {
         
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
+            
             ((TJDrawScenario)this.mScenario).updatePageBounds(
                 (TJ)this.mScenario.getApp());
         }
         @Override
         public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
     }
 
     public static class DrawScene extends TJScene {
+        // UI components
+        private JPanel mTopNavPanel;
+        private JPanel mBottomNavPanel;
+        
         private static DrawScene mSingleton = null;
         public static DrawScene getSingleton() {
             assert(DrawScene.mSingleton != null);
@@ -197,6 +221,16 @@ public class TJDrawScenario extends XScenario {
 
         private DrawScene(XScenario scenario) {
             super(scenario);
+        }
+        
+        private void initializeTopNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+        }
+        
+        private void initializeBottomNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
         }
         
         @Override
@@ -278,13 +312,14 @@ public class TJDrawScenario extends XScenario {
             Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
             g2.setClip(totalPageArea);
             
-            // Draw Content
-            canvas.drawCurPtCurve(g2);
+            // draw content
             canvas.drawPtCurves(g2, curPage[0].getPtCurves());
             canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
 
             canvas.drawPtCurves(g2, curPage[1].getPtCurves());
             canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
         }
         @Override
         public void renderScreenObjects(Graphics2D g2) {
@@ -293,11 +328,23 @@ public class TJDrawScenario extends XScenario {
         
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
             
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
         }
         @Override
         public void wrapUp() {
-            
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
     }
     

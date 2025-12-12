@@ -403,7 +403,7 @@ public class TJHomeScenario extends XScenario {
         drawSinglePage(g2, curPage[1], rightPageX, startY, pageWidth, pageHeight, 
             CURRENT_PAGE_COLOR);
         
-        double drawModeRatio = TJDrawScenario.PAGE_HEIGHT_RATIO; // 0.85
+        double drawModeRatio = TJCanvas2D.PAGE_EDIT_HEIGHT_RATIO; // 0.85
         int drawModeH = (int)(appHeight * drawModeRatio);
         int drawModeW = (int)(drawModeH * TJCanvas2D.PAGE_ASPECT_RATIO);
         int drawModeX = (appWidth - drawModeW * 2) / 2;

@@ -21,12 +21,18 @@ public class TJPage implements Serializable {
         return this.mSelectedPtCurves;
     }
     
+    private ArrayList<TJImage> mImages;
+    public ArrayList<TJImage> getImages() {
+        return this.mImages;
+    }
+    
     private boolean mIsEditable = true;
     
     // private constructor
     private TJPage(boolean isEditable) {
         this.mPtCurves = new ArrayList<>();
         this.mSelectedPtCurves = new ArrayList<>();
+        this.mImages = new ArrayList<>();
         this.mIsEditable = isEditable;
     }
     // public constructor to create editable pages
@@ -40,6 +46,12 @@ public class TJPage implements Serializable {
     
     public boolean isContentEmpty() {
         // TODO: update this as the functionality increase
-        return this.mPtCurves.isEmpty();
+        if (!this.mPtCurves.isEmpty()) return false;
+        if (!this.mImages.isEmpty()) return false;
+        return true;
+    }
+    
+    public void addImage(TJImage img) {
+        this.mImages.add(img);
     }
 }
