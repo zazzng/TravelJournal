@@ -11,6 +11,7 @@ public class TJColorChooser {
     private static final int CELL_NUM_B = 11;
     private static final float SATURATION_DEFAULT = 1f;
     private static final float OPAQUENESS_DEFAULT = 1f;
+    private static final double WIDTH_RATIO = 0.75;
     
     // fields
     private Color[][] mColors = null;
@@ -53,16 +54,20 @@ public class TJColorChooser {
     }
     
     public void drawCells(Graphics2D g2, int w, int h) {
+        double totalWidth = w;
+        double pickerWidth = totalWidth * WIDTH_RATIO;
+        double xStart = (totalWidth - pickerWidth) / 2.0;
+        
         // display cell colors
         double ys = (double)h / 3.0 * 1.0;
         double ye = (double)h / 3.0 * 2.0;
-        double dx = (double)w / (double)TJColorChooser.CELL_NUM_H;
+        double dx = pickerWidth / (double)TJColorChooser.CELL_NUM_H;
         double dy = (ye - ys) / (double)TJColorChooser.CELL_NUM_B;
         
         for (int i = 0; i < TJColorChooser.CELL_NUM_B; i++) {
             double y = ys + dy * (double)i;
             for (int j = 0; j < TJColorChooser.CELL_NUM_H; j++) {
-                double x = dx * (double)j;
+                double x = xStart + dx * (double)j;
                 Rectangle2D rect = new Rectangle2D.Double(x, y, dx, dy);
                 g2.setColor(this.mColors[i][j]);
                 g2.fill(rect);

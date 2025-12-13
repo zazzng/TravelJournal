@@ -243,7 +243,7 @@ public class TJHomeScenario extends XScenario {
             // 3. click on the page
             if (this.mCurPageBounds != null && this.mCurPageBounds.contains(mx, my)) {
                 XCmdToChangeScene.execute(tj,
-                    TJDefaultScenario.ReadyScene.getSingleton(), null);
+                    TJDrawScenario.DrawReadyScene.getSingleton(), null);
             }
         }
 

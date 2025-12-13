@@ -307,7 +307,7 @@ public class TJMapScenario extends XScenario {
                     
                     scenario.mNewPinPoint = null;
                     XCmdToChangeScene.execute(tj,
-                        TJDefaultScenario.ReadyScene.getSingleton(), null);
+                        TJDrawScenario.DrawReadyScene.getSingleton(), null);
                 }
             });
         }
@@ -385,7 +385,9 @@ public class TJMapScenario extends XScenario {
 
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+            String title = "User's Travel Journal";
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
         }
         
         private void initializeBottomNav() {

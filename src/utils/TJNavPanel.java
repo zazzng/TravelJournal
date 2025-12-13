@@ -16,6 +16,7 @@ import tj.scenario.TJDrawScenario;
 import tj.scenario.TJHomeScenario;
 import tj.scenario.TJImageScenario;
 import tj.TJScene; // Import TJScene to handle the return scene correctly
+import tj.scenario.TJColorScenario;
 import x.XCmdToChangeScene;
 
 public class TJNavPanel {
@@ -85,8 +86,8 @@ public class TJNavPanel {
         });
 
         colorBtn.addActionListener(e -> {
-            // Placeholder if TJColorScenario is not yet implemented:
-            // XCmdToChangeScene.execute(tj, TJColorScenario.ColorChangeScene.getSingleton(), returnScene);
+             XCmdToChangeScene.execute(tj,
+                TJColorScenario.ColorChangeScene.getSingleton(), returnScene);
         });
 
         imageBtn.addActionListener(e -> {
