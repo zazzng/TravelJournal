@@ -2,6 +2,7 @@ package tj.scenario;
 
 import utils.CircleButton;
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -19,10 +20,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import tj.TJ;
 import tj.TJCanvas2D;
+import tj.TJJournalBookMgr;
 import tj.TJPage;
-import tj.TJPageMgr;
 import tj.TJScene;
 import utils.CircleButton;
 import x.XApp;
@@ -124,25 +126,43 @@ public class TJHomeScenario extends XScenario {
             if (appHeight == 0) appHeight = 800;
             int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
             
-            this.mTopNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
+            this.mTopNavPanel = new JPanel(new BorderLayout());
             this.mTopNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             this.mTopNavPanel.setPreferredSize(new Dimension(0, topHeight));
             
+            // map button
+            JButton mapBtn = new JButton("< Map");
+            mapBtn.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            mapBtn.setForeground(new Color(50, 50, 50));
+            mapBtn.setFocusPainted(false);
+            mapBtn.setContentAreaFilled(false);
+            mapBtn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+
             String title;
             if (tj.getJournalBookMgr().getCurBook() != null) {
                 title = tj.getJournalBookMgr().getCurBook().getTitle();
-                this.mTitle = new JLabel(title);
+                this.mTitle = new JLabel(title, SwingConstants.CENTER);
             }
-            
             this.mTitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
             this.mTitle.setForeground(new Color(50, 50, 50));
             
-            this.mTopNavPanel.add(this.mTitle);
+            // dummy label
+            JLabel dummy = new JLabel("       ");
+            dummy.setPreferredSize(new Dimension(80, 0));
+            
+            this.mTopNavPanel.add(mapBtn, BorderLayout.WEST);
+            this.mTopNavPanel.add(this.mTitle, BorderLayout.CENTER);
+            this.mTopNavPanel.add(dummy, BorderLayout.EAST);
+            
+            mapBtn.addActionListener(e -> {
+                XCmdToChangeScene.execute(tj,
+                    TJMapScenario.MapReadyScene.getSingleton(), null);
+            });
         }
         
         private void initializeBottomNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            TJPageMgr pageMgr = tj.getPageMgr();
+            TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
             TJHomeScenario home = (TJHomeScenario) this.mScenario;
            
             int appWidth = tj.getCanvas2D().getWidth();
@@ -154,8 +174,8 @@ public class TJHomeScenario extends XScenario {
             int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
 
             // create buttons
-            mLoadBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
-                home.mLoadIcon, diameter);
+//            mLoadBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+//                home.mLoadIcon, diameter);
             mSaveBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
                 home.mSaveIcon, diameter);
             mDeleteBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
@@ -163,7 +183,7 @@ public class TJHomeScenario extends XScenario {
             mAddBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
                 home.mAddIcon, diameter);
             
-            mLoadBtn.setToolTipText("Load Journal");
+//            mLoadBtn.setToolTipText("Load Journal");
             mSaveBtn.setToolTipText("Save Journal");
             mDeleteBtn.setToolTipText("Delete Page");
             mAddBtn.setToolTipText("Add Page");
@@ -174,22 +194,22 @@ public class TJHomeScenario extends XScenario {
             mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
             
-            mBottomNavPanel.add(mLoadBtn);
+//            mBottomNavPanel.add(mLoadBtn);
             mBottomNavPanel.add(mSaveBtn);
             mBottomNavPanel.add(mAddBtn);
             mBottomNavPanel.add(mDeleteBtn);
 
             // connect actions
-            mLoadBtn.addActionListener(e -> {
-                try {
-                    tj.getPageMgr().loadJournal();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-            mSaveBtn.addActionListener(e -> tj.getPageMgr().saveJournal());
-            mAddBtn.addActionListener(e -> pageMgr.addEmptyPage());
-            mDeleteBtn.addActionListener(e -> pageMgr.deleteCurPage());
+//            mLoadBtn.addActionListener(e -> {
+//                try {
+//                    tj.getPageMgr().loadJournal();
+//                } catch (Exception ex) {
+//                    ex.printStackTrace();
+//                }
+//            });
+            mSaveBtn.addActionListener(e -> bookMgr.saveJournal());
+            mAddBtn.addActionListener(e -> bookMgr.addEmptyPage());
+            mDeleteBtn.addActionListener(e -> bookMgr.deleteCurPage());
         }
         
         private void updateBounds(int pageHeight, int pageWidth, int startX, int startY, int appWidth) {
@@ -217,17 +237,17 @@ public class TJHomeScenario extends XScenario {
         @Override
         public void handleMousePress(MouseEvent e) {
             TJ tj = (TJ)this.mScenario.getApp();
-            TJPageMgr pageMgr = tj.getPageMgr();
+            TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
             int mx = e.getX();
             int my = e.getY();
             
-            int curIndex = pageMgr.getCurPageIndex();
-            int totalPages = pageMgr.getJournalPages().size();
+            int curIndex = bookMgr.getCurPageIndex();
+            int totalPages = bookMgr.getCurBook().getPages().size();
             
             // 1. click on previous button
             if (this.mPrevNavBounds != null && this.mPrevNavBounds.contains(mx, my)) {
                 if (curIndex > 0) { 
-                    pageMgr.setCurPageIndex(curIndex - 1);
+                    bookMgr.setCurPageIndex(curIndex - 1);
                 }
                 return;
             }
@@ -235,7 +255,7 @@ public class TJHomeScenario extends XScenario {
             // 2. click on next button
             if (this.mNextNavBounds != null && this.mNextNavBounds.contains(mx, my)) {
                 if (curIndex < totalPages - 1) { 
-                    pageMgr.setCurPageIndex(curIndex + 1);
+                    bookMgr.setCurPageIndex(curIndex + 1);
                 }
                 return;
             }
@@ -293,7 +313,7 @@ public class TJHomeScenario extends XScenario {
             int startX = (appWidth - pageWidth * 2) / 2;
             int startY = (appHeight - bookHeight) / 2;
             
-            double scale = (double)pageHeight / TJPageMgr.WORLD_PAGE_HEIGHT;
+            double scale = (double)pageHeight / TJJournalBookMgr.WORLD_PAGE_HEIGHT;
             
             double transX = (double)startX;
             double transY = (double)startY;
@@ -321,7 +341,7 @@ public class TJHomeScenario extends XScenario {
             
             tj.setTopPanel(this.mTopNavPanel);
             tj.setBottomPanel(this.mBottomNavPanel);
-            
+                
             updateSupportObjects();
         }
 
@@ -330,6 +350,9 @@ public class TJHomeScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             tj.setTopPanel(null);
             tj.setBottomPanel(null);
+            
+            this.mTopNavPanel = null;
+            this.mBottomNavPanel = null;
         }
     }
     
@@ -386,9 +409,9 @@ public class TJHomeScenario extends XScenario {
         int hiddenPageY = startY + peekOffsetY;
         
         // fetch journal entries
-        TJPage[] curPage = tj.getPageMgr().getCurPage(); 
-        TJPage[] prevPage = tj.getPageMgr().getPrevPage();
-        TJPage[] nextPage = tj.getPageMgr().getNextPage();
+        TJPage[] curPage = tj.getJournalBookMgr().getCurPage(); 
+        TJPage[] prevPage = tj.getJournalBookMgr().getPrevPage();
+        TJPage[] nextPage = tj.getJournalBookMgr().getNextPage();
         
         assert(curPage != null);
         
@@ -444,9 +467,9 @@ public class TJHomeScenario extends XScenario {
         if (scene.mPrevNavBounds == null || scene.mNextNavBounds == null) return;
         
         TJ tj = (TJ)this.getApp();
-        TJPageMgr pageMgr = tj.getPageMgr();
-        int curIndex = pageMgr.getCurPageIndex();
-        int totalPages = pageMgr.getJournalPages().size();
+        TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
+        int curIndex = bookMgr.getCurPageIndex();
+        int totalPages = bookMgr.getCurBook().getPages().size();
         
         g2.setFont(g2.getFont().deriveFont(20f));
 

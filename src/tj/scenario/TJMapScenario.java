@@ -152,7 +152,7 @@ public class TJMapScenario extends XScenario {
 
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createMapTopNavPanel(tj);
+            this.mTopNavPanel = TJNavPanel.createMapTopNavPanel(tj, true);
         }
         
         private void initializeBottomNav() {
@@ -172,31 +172,30 @@ public class TJMapScenario extends XScenario {
         public void handleMousePress(MouseEvent e) {
             TJ tj = (TJ)this.mScenario.getApp();
             TJMapScenario scenario = (TJMapScenario)this.mScenario;
+            TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
             Point pt = e.getPoint();
             
-            // 1. Check for existing pinpoint click (Select Journal)
+            // check for existing pinpoint
             for (TJMapPinPoint pin : scenario.mPinPoints) {
                 if (pin.contains(pt)) {
-                    // Store the selected book's title/metadata and switch scene
-                    // NOTE: Need to find the book index based on title here if needed, 
-                    // or just pass the title and handle load in the next scene.
+                    String selectedTitle = pin.getBookTitle();
+                    int indexToSelect = -1;
+
+                    // find the index of the book in the metadata list
+                    for (int i = 0; i < bookMgr.getBookMetadata().size(); i++) {
+                        if (bookMgr.getBookMetadata().get(i).title.equals(selectedTitle)) {
+                            indexToSelect = i;
+                            break;
+                        }
+                    }
                     
-                    // For now, let's store the title and jump to select scene
-                    
-                    // We need a mechanism to store the selected PinPoint/Book
-                    // For simplicity, let's assume we find and select the book in the manager:
-                    TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
-                    
-                    // If the pin's stored point is its exact screen location, 
-                    // we can use it to find the book in the manager.
-                    // Since the pin points are based on metadata, we look up the title.
-                    // This requires iterating through metadata, which is complex.
-                    
-                    // Let's rely on the pin's title being unique:
-                    // For now, we skip the intermediate scene and assume MapSelectJournalScene is next.
-//                    XCmdToChangeScene.execute(tj,
-//                        TJMapScenario.MapSelectJournalScene.getSingleton(), pin.getBookTitle());
-//                    return;
+                    if (indexToSelect != -1) {
+                        bookMgr.selectBook(indexToSelect); 
+
+                        XCmdToChangeScene.execute(tj,
+                            TJMapScenario.MapSelectJournalScene.getSingleton(), this);
+                        return;
+                    }
                 }
             }
             
@@ -267,7 +266,7 @@ public class TJMapScenario extends XScenario {
 
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createMapTopNavPanel(tj);
+            this.mTopNavPanel = TJNavPanel.createMapTopNavPanel(tj, true);
         }
         
         private void initializeBottomNav() {
@@ -307,7 +306,7 @@ public class TJMapScenario extends XScenario {
                     
                     scenario.mNewPinPoint = null;
                     XCmdToChangeScene.execute(tj,
-                        TJDrawScenario.DrawReadyScene.getSingleton(), null);
+                        TJHomeScenario.CatalogueScene.getSingleton(), null);
                 }
             });
         }
@@ -372,8 +371,9 @@ public class TJMapScenario extends XScenario {
     public static class MapSelectJournalScene extends TJScene {
         private JPanel mTopNavPanel;
         private JPanel mBottomNavPanel;
-        private JButton mOpenBtn;
+        private JButton mCancelBtn;
         private JButton mDeleteBtn;
+        private JButton mOpenBtn;
         private String mSelectedBookTitle;
         
         private static MapSelectJournalScene mSingleton = null;
@@ -385,9 +385,7 @@ public class TJMapScenario extends XScenario {
 
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            String title = "User's Travel Journal";
-            
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
+            this.mTopNavPanel = TJNavPanel.createMapTopNavPanel(tj, false);
         }
         
         private void initializeBottomNav() {
@@ -395,65 +393,47 @@ public class TJMapScenario extends XScenario {
             int appHeight = tj.getCanvas2D().getHeight();
             int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
             
-            mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 15));
-            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_DARK);
+            mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 15));
+            mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
+            mBottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
             
-            mOpenBtn = new JButton("Open Journal");
+            mCancelBtn = new JButton("Cancel");
             mDeleteBtn = new JButton("Delete Journal");
-            mBottomNavPanel.add(mOpenBtn);
-            mBottomNavPanel.add(mDeleteBtn);
-
-            mOpenBtn.addActionListener(e -> {
-                // Find and select the book based on the title captured in getReady
-                // and jump to the editing scene (DefaultScenario)
-                TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
-                
-                // This is slightly complex: we need to find the book index or pinpoint
-                // in the metadata list using mSelectedBookTitle, then load and switch.
-                
-                // For demonstration, let's simplify: 
-                // We'll rely on the existing find/select logic using the pinpoint 
-                // which is not ideal, or just iterate metadata to find index.
-                
-                int indexToLoad = -1;
-                for (int i = 0; i < bookMgr.getBookMetadata().size(); i++) {
-                    if (bookMgr.getBookMetadata().get(i).title.equals(mSelectedBookTitle)) {
-                        indexToLoad = i;
-                        break;
-                    }
-                }
-                
-                if (indexToLoad != -1) {
-                    bookMgr.selectBook(indexToLoad); // Selects and loads content
-                    XCmdToChangeScene.execute(tj, TJDefaultScenario.ReadyScene.getSingleton(), null);
-                }
-            });
+            mOpenBtn = new JButton("Open Journal");
             
+            mBottomNavPanel.add(mCancelBtn);
+            mBottomNavPanel.add(mDeleteBtn);
+            mBottomNavPanel.add(mOpenBtn);
+            
+            mCancelBtn.addActionListener(e -> {
+                XCmdToChangeScene.execute(tj, this.mReturnScene, null);
+            });
+
             mDeleteBtn.addActionListener(e -> {
                 // TODO: Implement deletion logic (remove metadata, delete file)
                 XCmdToChangeScene.execute(tj, TJMapScenario.MapReadyScene.getSingleton(), null);
+            });
+            
+            mOpenBtn.addActionListener(e -> {
+                XCmdToChangeScene.execute(tj, TJHomeScenario.CatalogueScene.
+                    getSingleton(), null);
             });
         }
         
         @Override
         public void getReady() {
             TJ tj = (TJ)this.mScenario.getApp();
-            if (this.mTopNavPanel == null) initializeTopNav();
-            if (this.mBottomNavPanel == null) initializeBottomNav();
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
             tj.setTopPanel(this.mTopNavPanel);
             tj.setBottomPanel(this.mBottomNavPanel);
-            
-            // The return object from the previous scene (MapReadyScene) is the title
-            if (this.mReturnObject instanceof String) {
-                mSelectedBookTitle = (String)this.mReturnObject;
-            }
-            
-            // Update title bar to show selected book title
-            JLabel titleLabel = (JLabel)((BorderLayout)mTopNavPanel.getLayout()).getLayoutComponent(BorderLayout.CENTER);
-            if (titleLabel != null) {
-                titleLabel.setText(mSelectedBookTitle);
-            }
             
             ((TJMapScenario)this.mScenario).syncPinPoints();
         }
@@ -476,6 +456,9 @@ public class TJMapScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             tj.setTopPanel(null);
             tj.setBottomPanel(null);
+            
+            this.mTopNavPanel = null;
+            this.mBottomNavPanel = null;
         }
 
         @Override

@@ -64,6 +64,8 @@ public class TJJournalBookMgr implements Serializable {
         this.mCurrentBookCache = newBook;
         this.mCurBookIndex = this.mBookMetadata.size() - 1; 
         this.mCurPageIndex = 0; 
+        
+        System.out.println("@JournalBookMgr: curPageIndex = " + this.mCurPageIndex);
 
         saveSingleBook(newBook);
         saveMetadataIndex();

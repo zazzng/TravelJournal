@@ -103,7 +103,7 @@ public class TJNavPanel {
         return bottomNavPanel;
     }
     
-    public static JPanel createMapTopNavPanel(TJ tj) {
+    public static JPanel createMapTopNavPanel(TJ tj, boolean defaultTitle) {
         int appHeight = tj.getCanvas2D().getHeight();
         if (appHeight == 0) appHeight = 800;
         int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
@@ -112,7 +112,13 @@ public class TJNavPanel {
         topNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
         topNavPanel.setPreferredSize(new Dimension(0, topHeight));
         
-        JLabel title = new JLabel("User's Travel Journal");
+        JLabel title;
+        if (defaultTitle) {
+            title = new JLabel("User's Travel Journal");
+        } else {
+            String journalTitle = tj.getJournalBookMgr().getCurBook().getTitle();
+            title = new JLabel(journalTitle);
+        }
         title.setFont(new Font("SansSerif", Font.PLAIN, 16));
         title.setForeground(new Color(50, 50, 50));
         

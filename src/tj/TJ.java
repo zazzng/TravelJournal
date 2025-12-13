@@ -96,11 +96,11 @@ public class TJ extends XApp {
         this.mLogMgr.setPrintOn(true);
         
         // load or initialize journal data
-        boolean loadSuccess = this.mPageMgr.loadJournal();
-        if (!loadSuccess || this.mPageMgr.getJournalPages().isEmpty()) {
-            // Start with a blank spread if loading failed or file was empty
-            this.mPageMgr.addEmptyPage(); 
-        }
+//        boolean loadSuccess = this.mPageMgr.loadJournal();
+//        if (!loadSuccess || this.mPageMgr.getJournalPages().isEmpty()) {
+//            // Start with a blank spread if loading failed or file was empty
+//            this.mPageMgr.addEmptyPage(); 
+//        }
         
         // connect event listeners
         this.mCanvas2D.addMouseListener(this.mEventListener);
