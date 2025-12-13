@@ -140,6 +140,47 @@ public class TJJournalBookMgr implements Serializable {
         }
     }
     
+    public boolean deleteBookByTitle(String title) {
+        if (title == null) return false;
+
+        String sanitizedTitle = title.replaceAll("[^a-zA-Z0-9.-]", "_");
+        File bookFile = new File(JOURNAL_DIR + "/" + sanitizedTitle + ".dat");
+
+        int indexToRemove = -1;
+        for (int i = 0; i < this.mBookMetadata.size(); i++) {
+            if (this.mBookMetadata.get(i).title.equals(title)) {
+                indexToRemove = i;
+                break;
+            }
+        }
+
+        if (indexToRemove != -1) {
+            this.mBookMetadata.remove(indexToRemove);
+
+            boolean fileDeleted = bookFile.delete();
+
+            if (mCurrentBookCache != null && mCurrentBookCache.getTitle().equals(title)) {
+                mCurrentBookCache = null;
+            }
+            
+            if (mCurBookIndex >= indexToRemove) {
+                mCurBookIndex--;
+            }
+
+            if (mBookMetadata.isEmpty()) {
+                mCurBookIndex = -1;
+                mCurPageIndex = 0;
+            } else if (mCurBookIndex < 0) {
+                mCurBookIndex = 0;
+            }
+
+            saveMetadataIndex();
+            return true;
+        }
+
+        return false;
+    }
+    
     private ArrayList<TJPage[]> getCurBookPages() {
         TJJournalBook book = getCurBook();
         return (book != null) ? book.getPages() : new ArrayList<>();

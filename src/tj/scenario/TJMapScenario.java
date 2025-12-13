@@ -390,6 +390,7 @@ public class TJMapScenario extends XScenario {
         
         private void initializeBottomNav() {
             TJ tj = (TJ)this.mScenario.getApp();
+            TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
             int appHeight = tj.getCanvas2D().getHeight();
             int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
             
@@ -411,8 +412,31 @@ public class TJMapScenario extends XScenario {
             });
 
             mDeleteBtn.addActionListener(e -> {
-                // TODO: Implement deletion logic (remove metadata, delete file)
-                XCmdToChangeScene.execute(tj, TJMapScenario.MapReadyScene.getSingleton(), null);
+                String titleToDelete = this.mSelectedBookTitle;
+                if (titleToDelete == null || titleToDelete.isEmpty()) {
+                    System.err.println("Error: No journal selected for deletion.");
+                    return;
+                }
+                
+                int confirmation = JOptionPane.showConfirmDialog(
+                    tj.getCanvas2D(),
+                    "Are you sure you want to permanently delete the journal \"" + titleToDelete + "\"?",
+                    "Confirm Deletion",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                );
+                
+                if (confirmation == JOptionPane.YES_OPTION) {
+                    boolean deleted = bookMgr.deleteBookByTitle(titleToDelete);
+
+                    if (deleted) {
+                        System.out.println("🗑 Journal '" + titleToDelete + "' deleted successfully.");
+
+                        XCmdToChangeScene.execute(tj, TJMapScenario.MapReadyScene.getSingleton(), null);
+                    } else {
+                        JOptionPane.showMessageDialog(tj.getCanvas2D(), "Failed to delete journal file or metadata.", "Deletion Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             });
             
             mOpenBtn.addActionListener(e -> {
@@ -424,6 +448,8 @@ public class TJMapScenario extends XScenario {
         @Override
         public void getReady() {
             TJ tj = (TJ)this.mScenario.getApp();
+            this.mSelectedBookTitle = tj.getJournalBookMgr().getCurBook().
+                getTitle();
             
             if (this.mTopNavPanel == null) {
                 initializeTopNav();
