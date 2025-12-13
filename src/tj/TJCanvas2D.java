@@ -171,5 +171,36 @@ public class TJCanvas2D extends JPanel {
             img.draw(g2);
         }
     }
+    
+    public void drawPenTip(Graphics2D g2) {
+         // display the current pen tip color and size
+         BasicStroke bs = (BasicStroke) this.mCurStrokeForPtCurve;
+         Point2D.Double worldPt0 = new Point2D.Double(0.0, 0.0);
+         Point2D.Double worldPt1 = new Point2D.Double(bs.getLineWidth(), 0.0);
+         Point screenPt0 = this.mTJ.getXform().calcPtFromWorldToScreen(worldPt0);
+         Point screenPt1 = this.mTJ.getXform().calcPtFromWorldToScreen(worldPt1);
+         double d = screenPt0.distance(screenPt1);
+         double r = d / 2.0;
 
+         Point2D.Double ctr = new Point2D.Double(
+             this.getWidth() - TJCanvas2D.PEN_TIP_OFFSET,
+             TJCanvas2D.PEN_TIP_OFFSET);
+         Ellipse2D.Double e = new Ellipse2D.Double(ctr.x - r, ctr.y - r, d, d);
+         g2.setColor(this.mCurColorForPtCurve);
+         g2.fill(e);
+     }
+    
+    public void increaseStrokeWidthForCurPtCurve(float f) {
+        // set the stroke width higher
+        BasicStroke bs = (BasicStroke) this.mCurStrokeForPtCurve;
+        float w = bs.getLineWidth();
+        w += f;
+        
+        if (w < TJCanvas2D.STROKE_MIN_WIDTH) {
+            w = TJCanvas2D.STROKE_MIN_WIDTH;
+        }
+        
+        this.mCurStrokeForPtCurve = new BasicStroke(w, bs.getEndCap(),
+            bs.getLineJoin());
+    }
 }

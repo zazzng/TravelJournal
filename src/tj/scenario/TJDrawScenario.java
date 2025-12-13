@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Point2D;
 import javax.swing.JPanel;
 import tj.TJ;
 import tj.TJCanvas2D;
@@ -15,6 +16,7 @@ import tj.TJPage;
 import tj.TJScene;
 import tj.cmd.TJCmdToAddCurPtCurveToPtCurves;
 import tj.cmd.TJCmdToCreateCurPtCurve;
+import tj.cmd.TJCmdToIncreaseStrokeWidthForCurPtCurve;
 import tj.cmd.TJCmdToUpdateCurPtCurve;
 import utils.TJNavPanel;
 import x.XApp;
@@ -94,7 +96,12 @@ public class TJDrawScenario extends XScenario {
         
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
         }
         
         private void initializeBottomNav() {
@@ -135,6 +142,21 @@ public class TJDrawScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
+            System.out.println("a key is pressed");
+            TJ tj = (TJ)this.mScenario.getApp();
+            int code = e.getKeyCode();
+            
+            switch (code) {
+                case KeyEvent.VK_UP:
+                    System.out.println("add stroke width pls");
+                    TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
+                        TJCanvas2D.STROKE_WIDTH_INCREMENT);
+                    break;
+                case KeyEvent.VK_DOWN:
+                    TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
+                        -TJCanvas2D.STROKE_WIDTH_INCREMENT);
+                    break;
+            }
         }
         
         @Override
@@ -176,6 +198,10 @@ public class TJDrawScenario extends XScenario {
         
         @Override
         public void renderScreenObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+
+            canvas.drawPenTip(g2);
         }
         
         @Override
@@ -225,7 +251,12 @@ public class TJDrawScenario extends XScenario {
         
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
         }
         
         private void initializeBottomNav() {
@@ -323,7 +354,10 @@ public class TJDrawScenario extends XScenario {
         }
         @Override
         public void renderScreenObjects(Graphics2D g2) {
-            // TODO Auto-generated method stub
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+
+            canvas.drawPenTip(g2);
         }
         
         @Override

@@ -74,7 +74,12 @@ public class TJDefaultScenario extends XScenario {
         
         public void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
         }
 
         public void initializeBottomNav() {

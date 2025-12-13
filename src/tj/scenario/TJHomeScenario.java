@@ -90,7 +90,7 @@ public class TJHomeScenario extends XScenario {
     public static class CatalogueScene extends TJScene {
         // fields for UI components specific to this scene
         private JPanel mTopNavPanel = null;
-        private JLabel mTitle = new JLabel("User's Travel Journal");
+        private JLabel mTitle = new JLabel("Untitled Journal");
         
         private JPanel mBottomNavPanel = null;
         
@@ -127,6 +127,12 @@ public class TJHomeScenario extends XScenario {
             this.mTopNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
             this.mTopNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             this.mTopNavPanel.setPreferredSize(new Dimension(0, topHeight));
+            
+            String title;
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+                this.mTitle = new JLabel(title);
+            }
             
             this.mTitle.setFont(new Font("SansSerif", Font.PLAIN, 16));
             this.mTitle.setForeground(new Color(50, 50, 50));

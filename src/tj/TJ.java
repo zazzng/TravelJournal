@@ -45,6 +45,11 @@ public class TJ extends XApp {
         return this.mEventListener;
     }
     
+    private TJJournalBookMgr mJournalBookMgr = null;
+    public TJJournalBookMgr getJournalBookMgr() {
+        return this.mJournalBookMgr;
+    }
+    
     private TJPageMgr mPageMgr = null;
     public TJPageMgr getPageMgr() {
         return this.mPageMgr;
@@ -82,6 +87,7 @@ public class TJ extends XApp {
         this.mXform = new TJXform();
         this.mColorChooser = new TJColorChooser();
         this.mEventListener = new TJEventListener(this);
+        this.mJournalBookMgr = new TJJournalBookMgr(this);
         this.mPageMgr = new TJPageMgr(this);
         this.mPenMarkMgr = new TJPenMarkMgr();
         this.mPtCurveMgr = new TJPtCurveMgr();

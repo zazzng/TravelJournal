@@ -52,6 +52,9 @@ public class TJImageScenario extends XScenario {
     @Override
     protected void addScenes() {
         this.addScene(TJImageScenario.ImageReadyScene.createSingleton(this));
+        this.addScene(TJImageScenario.ImageRotateScene.createSingleton(this));
+        this.addScene(TJImageScenario.ImageMoveScene.createSingleton(this));
+        this.addScene(TJImageScenario.ImageScaleScene.createSingleton(this));
     }
     
     private Rectangle getTotalPageBounds(TJ tj) {
@@ -96,7 +99,12 @@ public class TJImageScenario extends XScenario {
         
         private void initializeTopNav() {
             TJ tj = (TJ)this.mScenario.getApp();
-            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj);
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
         }
         
         private void initializeBottomNav() {
@@ -151,7 +159,25 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
-           
+           TJ tj = (TJ)this.mScenario.getApp();
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+
+            if (scenario.mSelectedImage == null) return;
+
+            switch (e.getKeyCode()) {
+                case KeyEvent.VK_R:
+                    // R: Rotate Mode
+                    XCmdToChangeScene.execute(tj, TJImageScenario.ImageRotateScene.getSingleton(), this);
+                    break;
+                case KeyEvent.VK_M:
+                    // M: Move Mode
+                    XCmdToChangeScene.execute(tj, TJImageScenario.ImageMoveScene.getSingleton(), this);
+                    break;
+                case KeyEvent.VK_S:
+                    // S: Scale Mode
+                    XCmdToChangeScene.execute(tj, TJImageScenario.ImageScaleScene.getSingleton(), this);
+                    break;
+            }
         }
 
         @Override
@@ -234,6 +260,387 @@ public class TJImageScenario extends XScenario {
         }
     }
     
+    public static class ImageRotateScene extends TJScene {
+        // UI Components
+        private JPanel mTopNavPanel;
+        private JPanel mBottomNavPanel;
+        
+        // singleton pattern
+        private static ImageRotateScene mSingleton = null;
+        public static ImageRotateScene getSingleton() {
+            assert(ImageRotateScene.mSingleton != null);
+            return ImageRotateScene.mSingleton;
+        }
+        public static ImageRotateScene createSingleton(XScenario scenario) {
+            assert(ImageRotateScene.mSingleton == null);
+            ImageRotateScene.mSingleton = new ImageRotateScene(scenario);
+            return ImageRotateScene.mSingleton;
+        }
+        private ImageRotateScene(XScenario scenario) {
+            super(scenario);
+        }
+        
+        private void initializeTopNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
+        }
+        
+        private void initializeBottomNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
+        }
+
+        @Override
+        public void handleMousePress(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = e.getPoint();
+        }
+
+        @Override
+        public void handleMouseDrag(MouseEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            if (scenario.mSelectedImage == null || scenario.mLastMousePt == null) return;
+
+            Point curPt = e.getPoint();
+            double dx = curPt.x - scenario.mLastMousePt.x;
+
+            // Rotation proportional to horizontal drag (using radians)
+            double rotateAmt = Math.toRadians(dx * 0.5); 
+            scenario.mSelectedImage.rotate(rotateAmt);
+
+            scenario.mLastMousePt = curPt;
+            tj.getCanvas2D().repaint();
+        }
+
+        @Override
+        public void handleMouseRelease(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = null;
+        }
+
+        @Override
+        public void handleKeyDown(KeyEvent e) {
+           TJ tj = (TJ)this.mScenario.getApp();
+           int code = e.getKeyCode();
+           
+           switch (code) {
+               case KeyEvent.VK_R:
+                    XCmdToChangeScene.execute(tj,
+                        TJImageScenario.ImageReadyScene.getSingleton(), this);
+                    break;
+           }
+        }
+
+        @Override
+        public void handleKeyUp(KeyEvent e) {
+        }
+
+        @Override
+        public void updateSupportObjects() {
+        }
+        
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        }
+
+        @Override
+        public void renderWorldObjects(Graphics2D g2) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.drawPageAndContent(g2);
+        }
+
+        @Override
+        public void renderScreenObjects(Graphics2D g2) {
+        }
+
+        @Override
+        public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
+        }
+
+        @Override
+        public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
+        }
+    }
+    
+    public static class ImageMoveScene extends TJScene {
+        // UI Components
+        private JPanel mTopNavPanel;
+        private JPanel mBottomNavPanel;
+        
+        // singleton pattern
+        private static ImageMoveScene mSingleton = null;
+        public static ImageMoveScene getSingleton() {
+            assert(ImageMoveScene.mSingleton != null);
+            return ImageMoveScene.mSingleton;
+        }
+        public static ImageMoveScene createSingleton(XScenario scenario) {
+            assert(ImageMoveScene.mSingleton == null);
+            ImageMoveScene.mSingleton = new ImageMoveScene(scenario);
+            return ImageMoveScene.mSingleton;
+        }
+        private ImageMoveScene(XScenario scenario) {
+            super(scenario);
+        }
+        
+        private void initializeTopNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
+        }
+        
+        private void initializeBottomNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
+        }
+
+        @Override
+        public void handleMousePress(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = e.getPoint();
+        }
+
+        @Override
+        public void handleMouseDrag(MouseEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            if (scenario.mSelectedImage == null || scenario.mLastMousePt == null) return;
+
+            Point curPt = e.getPoint();
+            double dx = curPt.x - scenario.mLastMousePt.x;
+            double dy = curPt.y - scenario.mLastMousePt.y;
+
+            scenario.mSelectedImage.translate(dx, dy);
+
+            scenario.mLastMousePt = curPt;
+            tj.getCanvas2D().repaint();
+        }
+
+        @Override
+        public void handleMouseRelease(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = null;
+        }
+
+        @Override
+        public void handleKeyDown(KeyEvent e) {
+           TJ tj = (TJ)this.mScenario.getApp();
+           int code = e.getKeyCode();
+           
+           switch (code) {
+               case KeyEvent.VK_M:
+                    XCmdToChangeScene.execute(tj,
+                        TJImageScenario.ImageReadyScene.getSingleton(), this);
+                    break;
+           }
+        }
+
+        @Override
+        public void handleKeyUp(KeyEvent e) {
+        }
+
+        @Override
+        public void updateSupportObjects() {
+        }
+        
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        }
+
+        @Override
+        public void renderWorldObjects(Graphics2D g2) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.drawPageAndContent(g2);
+        }
+
+        @Override
+        public void renderScreenObjects(Graphics2D g2) {
+        }
+
+        @Override
+        public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
+        }
+
+        @Override
+        public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
+        }
+    }
+    
+    public static class ImageScaleScene extends TJScene {
+        // UI Components
+        private JPanel mTopNavPanel;
+        private JPanel mBottomNavPanel;
+        
+        // singleton pattern
+        private static ImageScaleScene mSingleton = null;
+        public static ImageScaleScene getSingleton() {
+            assert(ImageScaleScene.mSingleton != null);
+            return ImageScaleScene.mSingleton;
+        }
+        public static ImageScaleScene createSingleton(XScenario scenario) {
+            assert(ImageScaleScene.mSingleton == null);
+            ImageScaleScene.mSingleton = new ImageScaleScene(scenario);
+            return ImageScaleScene.mSingleton;
+        }
+        private ImageScaleScene(XScenario scenario) {
+            super(scenario);
+        }
+        
+        private void initializeTopNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
+        }
+        
+        private void initializeBottomNav() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, this);
+        }
+
+        @Override
+        public void handleMousePress(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = e.getPoint();
+        }
+
+        @Override
+        public void handleMouseDrag(MouseEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            if (scenario.mSelectedImage == null || scenario.mLastMousePt == null) return;
+
+            Point curPt = e.getPoint();
+            double dy = curPt.y - scenario.mLastMousePt.y;
+
+            // Scaling based on vertical drag
+            // Dragging up (dy < 0) scales up (factor > 1)
+            double scaleFactor = 1.0 - (dy * 0.01); 
+            scenario.mSelectedImage.scale(scaleFactor);
+
+            scenario.mLastMousePt = curPt;
+            tj.getCanvas2D().repaint();
+        }
+
+        @Override
+        public void handleMouseRelease(MouseEvent e) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.mLastMousePt = null;
+        }
+
+        @Override
+        public void handleKeyDown(KeyEvent e) {
+           TJ tj = (TJ)this.mScenario.getApp();
+           int code = e.getKeyCode();
+           
+           switch (code) {
+               case KeyEvent.VK_S:
+                    XCmdToChangeScene.execute(tj,
+                        TJImageScenario.ImageReadyScene.getSingleton(), this);
+                    break;
+           }
+        }
+
+        @Override
+        public void handleKeyUp(KeyEvent e) {
+        }
+
+        @Override
+        public void updateSupportObjects() {
+        }
+        
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        }
+
+        @Override
+        public void renderWorldObjects(Graphics2D g2) {
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            scenario.drawPageAndContent(g2);
+        }
+
+        @Override
+        public void renderScreenObjects(Graphics2D g2) {
+        }
+
+        @Override
+        public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            
+            if (this.mTopNavPanel == null) {
+                initializeTopNav();
+            }
+            if (this.mBottomNavPanel == null) {
+                initializeBottomNav();
+            }
+            
+            tj.setTopPanel(this.mTopNavPanel);
+            tj.setBottomPanel(this.mBottomNavPanel);
+        }
+
+        @Override
+        public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
+        }
+    }
+    
     private void drawPageStructure(Graphics2D g2, int startX, int startY, int pageWidth, int pageHeight) {
         // left page
         g2.setColor(Color.WHITE);
@@ -253,6 +660,40 @@ public class TJImageScenario extends XScenario {
         g2.setStroke(new BasicStroke(2.0f));
         g2.setColor(new Color(200, 200, 200)); 
         g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
+    }
+    
+    private void drawPageAndContent(Graphics2D g2) {
+        TJ tj = (TJ)this.getApp();
+        TJCanvas2D canvas = tj.getCanvas2D();
+
+        Rectangle clipRect = this.getTotalPageBounds(tj);
+        int startX = clipRect.x;
+        int startY = clipRect.y;
+        int pageWidth = clipRect.width / 2;
+        int pageHeight = clipRect.height;
+
+        TJPage[] curPage = tj.getPageMgr().getCurPage();
+        if (curPage == null) return;
+
+        this.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+
+        Shape oldClip = g2.getClip();
+        g2.setClip(clipRect);
+
+        if (curPage!= null) {
+            canvas.drawImages(g2, curPage[0].getImages());
+            canvas.drawImages(g2, curPage[1].getImages());
+
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+
+            canvas.drawCurPtCurve(g2);
+        }
+
+        g2.setClip(oldClip);
     }
     
     private void handleLongTap(TJ tj, Point pt) {

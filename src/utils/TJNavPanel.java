@@ -20,7 +20,7 @@ import x.XCmdToChangeScene;
 
 public class TJNavPanel {
 
-    public static JPanel createTopNavPanel(TJ tj) {
+    public static JPanel createTopNavPanel(TJ tj, String title) {
         int appHeight = tj.getCanvas2D().getHeight();
         if (appHeight == 0) appHeight = 800;
         int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
@@ -38,7 +38,7 @@ public class TJNavPanel {
         backBtn.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
         
         // title label
-        JLabel titleLabel = new JLabel("Untitled Page", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         titleLabel.setForeground(Color.WHITE);
         
@@ -100,5 +100,23 @@ public class TJNavPanel {
         });
 
         return bottomNavPanel;
+    }
+    
+    public static JPanel createMapTopNavPanel(TJ tj) {
+        int appHeight = tj.getCanvas2D().getHeight();
+        if (appHeight == 0) appHeight = 800;
+        int topHeight = (int)(appHeight * TJCanvas2D.TOP_NAV_RATIO);
+        
+        JPanel topNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
+        topNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
+        topNavPanel.setPreferredSize(new Dimension(0, topHeight));
+        
+        JLabel title = new JLabel("User's Travel Journal");
+        title.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        title.setForeground(new Color(50, 50, 50));
+        
+        topNavPanel.add(title);
+        
+        return topNavPanel;
     }
 }
