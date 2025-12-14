@@ -1,5 +1,6 @@
 package tj;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -19,8 +20,20 @@ public class TJImage implements Serializable {
     
     // position and transform data
     private double mX, mY;
+    public double getX() {
+        return this.mX;
+    }
+    public double getY() {
+        return this.mY;
+    }
     private double mScale = 1.0;
+    public double getScale() {
+        return this.mScale;
+    }
     private double mRotation = 0.0; // in radians
+    public double getRotation() {
+        return this.mRotation;
+    }
     
     // image data
     private transient BufferedImage mImage;
@@ -54,6 +67,28 @@ public class TJImage implements Serializable {
         }
     }
     
+    public int getWidth() { 
+        return mImage != null ? mImage.getWidth() : 0; 
+    }
+
+    public int getHeight() { 
+        return mImage != null ? mImage.getHeight() : 0; 
+    }
+    
+    public Rectangle getBounds() {
+        if (mImage == null) return new Rectangle();
+
+        // Calculate scaled dimensions
+        int scaledWidth = (int) (mImage.getWidth() * mScale);
+        int scaledHeight = (int) (mImage.getHeight() * mScale);
+
+        // Calculate top-left corner
+        int x = (int) (mX - scaledWidth / 2);
+        int y = (int) (mY - scaledHeight / 2);
+
+        return new Rectangle(x, y, scaledWidth, scaledHeight);
+    }
+    
     public void draw(Graphics2D g2) {
         if (mImage == null) return;
 
@@ -67,9 +102,11 @@ public class TJImage implements Serializable {
         int h = mImage.getHeight();
         g2.drawImage(mImage, -w/2, -h/2, null);
         
-        // optional: draw selection border
-         g2.setColor(Color.BLUE);
-         g2.drawRect(-w/2, -h/2, w, h);
+//        if (isSelected) {
+//            g2.setColor(new Color(50, 150, 255));
+//            g2.setStroke(new BasicStroke(3.0f));
+//            g2.drawRect(-w/2, -h/2, w, h);
+//        }
 
         g2.setTransform(saveAT);
     }

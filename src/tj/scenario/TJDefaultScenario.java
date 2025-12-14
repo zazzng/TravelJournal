@@ -108,7 +108,7 @@ public class TJDefaultScenario extends XScenario {
             int startX = (appWidth - pageWidth * 2) / 2;
             int startY = (appHeight - pageHeight) / 2;
 
-            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
             
             // draw the dark background
             g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 

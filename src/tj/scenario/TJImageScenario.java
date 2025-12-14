@@ -6,9 +6,12 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -33,6 +36,9 @@ public class TJImageScenario extends XScenario {
     // constants
     private TJImage mSelectedImage = null;
     private Point mLastMousePt = null;
+    
+    private static final Color SELECTION_BORDER_COLOR = new Color(50, 150, 255);
+    private static final BasicStroke SELECTION_STROKE = new BasicStroke(3.0f);
     
     // singleton pattern
     private static TJImageScenario mSingleton = null;
@@ -116,22 +122,32 @@ public class TJImageScenario extends XScenario {
         public void handleMousePress(MouseEvent e) {
             TJ tj = (TJ)this.mScenario.getApp();
             mPressPoint = e.getPoint();
+            TJImageScenario scenario = (TJImageScenario)this.mScenario;
+            TJPage[] pages = tj.getJournalBookMgr().getCurPage();
+            
+            TJImage clickedImage = null;
             
             // 1. check if user clicked an existing image (for selection)
-            TJImageScenario scenario = (TJImageScenario)this.mScenario;
-            TJPage[] pages = tj.getPageMgr().getCurPage();
             for (TJPage p : pages) {
                 ArrayList<TJImage> imgs = p.getImages();
                 for (int i = imgs.size() - 1; i >= 0; i--) {
                     if (imgs.get(i).contains(mPressPoint)) {
-                        scenario.mSelectedImage = imgs.get(i);
-                        scenario.mLastMousePt = mPressPoint;
-//                        XCmdToChangeScene.execute(tj,
-//                            TJImageScenario.ImageManipulateScene.getSingleton(),
-//                            this);
-                        return; // found image, don't start timer
+                        clickedImage = imgs.get(i);
+                        break; // found image, don't start timer
                     }
                 }
+                if (clickedImage != null) break;
+            }
+            
+            if (clickedImage != null) {
+                // a new image was clicked: select it
+                scenario.mSelectedImage = clickedImage;
+                scenario.mLastMousePt = mPressPoint;
+                tj.getCanvas2D().repaint();
+                return; 
+            } else {
+                scenario.mSelectedImage = null;
+                tj.getCanvas2D().repaint();
             }
 
             // 2. start long tap timer for adding new image
@@ -209,28 +225,11 @@ public class TJImageScenario extends XScenario {
             int pageWidth = clipRect.width / 2;
             int pageHeight = clipRect.height;
             
-            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
             if (curPage == null) return;
             
-            scenario.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
-            
-            Shape oldClip = g2.getClip();
-            g2.setClip(clipRect);
-            
-            if (curPage!= null) {
-                canvas.drawImages(g2, curPage[0].getImages());
-                canvas.drawImages(g2, curPage[1].getImages());
-                
-                canvas.drawPtCurves(g2, curPage[0].getPtCurves());
-                canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
-
-                canvas.drawPtCurves(g2, curPage[1].getPtCurves());
-                canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
-
-                canvas.drawCurPtCurve(g2);
-            }
-            
-            g2.setClip(oldClip);
+            scenario.drawPageAndContent(g2, canvas, curPage, startX, startY,
+                pageWidth, pageHeight);
         }
 
         @Override
@@ -305,14 +304,29 @@ public class TJImageScenario extends XScenario {
         public void handleMouseDrag(MouseEvent e) {
             TJ tj = (TJ)this.mScenario.getApp();
             TJImageScenario scenario = (TJImageScenario)this.mScenario;
-            if (scenario.mSelectedImage == null || scenario.mLastMousePt == null) return;
+            TJImage selectedImage = scenario.mSelectedImage;
+            if (selectedImage == null || scenario.mLastMousePt == null) return;
 
             Point curPt = e.getPoint();
-            double dx = curPt.x - scenario.mLastMousePt.x;
 
-            // Rotation proportional to horizontal drag (using radians)
-            double rotateAmt = Math.toRadians(dx * 0.5); 
-            scenario.mSelectedImage.rotate(rotateAmt);
+            // 1. Get the image center (mX, mY)
+            Point2D.Double center = new Point2D.Double(selectedImage.getX(), selectedImage.getY());
+
+            // 2. Calculate angle of the last point relative to the center
+            double deltaY_prev = scenario.mLastMousePt.y - center.y;
+            double deltaX_prev = scenario.mLastMousePt.x - center.x;
+            double anglePrev = Math.atan2(deltaY_prev, deltaX_prev);
+
+            // 3. Calculate angle of the current point relative to the center
+            double deltaY_cur = curPt.y - center.y;
+            double deltaX_cur = curPt.x - center.x;
+            double angleCur = Math.atan2(deltaY_cur, deltaX_cur);
+
+            // 4. Calculate the difference (angleAmt)
+            double rotateAmt = angleCur - anglePrev;
+
+            // Apply rotation
+            selectedImage.rotate(rotateAmt);
 
             scenario.mLastMousePt = curPt;
             tj.getCanvas2D().repaint();
@@ -326,19 +340,19 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
-           TJ tj = (TJ)this.mScenario.getApp();
-           int code = e.getKeyCode();
-           
-           switch (code) {
-               case KeyEvent.VK_R:
-                    XCmdToChangeScene.execute(tj,
-                        TJImageScenario.ImageReadyScene.getSingleton(), this);
-                    break;
-           }
         }
 
         @Override
         public void handleKeyUp(KeyEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            int code = e.getKeyCode();
+
+            switch (code) {
+                case KeyEvent.VK_R:
+                     XCmdToChangeScene.execute(tj,
+                         TJImageScenario.ImageReadyScene.getSingleton(), this);
+                     break;
+            }
         }
 
         @Override
@@ -356,8 +370,21 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
             TJImageScenario scenario = (TJImageScenario)this.mScenario;
-            scenario.drawPageAndContent(g2);
+            
+            Rectangle clipRect = scenario.getTotalPageBounds(tj);
+            int startX = clipRect.x;
+            int startY = clipRect.y;
+            int pageWidth = clipRect.width / 2;
+            int pageHeight = clipRect.height;
+            
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
+            if (curPage == null) return;
+            
+            scenario.drawPageAndContent(g2, canvas, curPage, startX, startY,
+                pageWidth, pageHeight);
         }
 
         @Override
@@ -452,19 +479,19 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
-           TJ tj = (TJ)this.mScenario.getApp();
-           int code = e.getKeyCode();
-           
-           switch (code) {
-               case KeyEvent.VK_M:
-                    XCmdToChangeScene.execute(tj,
-                        TJImageScenario.ImageReadyScene.getSingleton(), this);
-                    break;
-           }
         }
 
         @Override
         public void handleKeyUp(KeyEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            int code = e.getKeyCode();
+
+            switch (code) {
+                case KeyEvent.VK_M:
+                     XCmdToChangeScene.execute(tj,
+                         TJImageScenario.ImageReadyScene.getSingleton(), this);
+                     break;
+            }
         }
 
         @Override
@@ -482,8 +509,21 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
             TJImageScenario scenario = (TJImageScenario)this.mScenario;
-            scenario.drawPageAndContent(g2);
+            
+            Rectangle clipRect = scenario.getTotalPageBounds(tj);
+            int startX = clipRect.x;
+            int startY = clipRect.y;
+            int pageWidth = clipRect.width / 2;
+            int pageHeight = clipRect.height;
+            
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
+            if (curPage == null) return;
+            
+            scenario.drawPageAndContent(g2, canvas, curPage, startX, startY,
+                pageWidth, pageHeight);
         }
 
         @Override
@@ -580,19 +620,19 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
-           TJ tj = (TJ)this.mScenario.getApp();
-           int code = e.getKeyCode();
-           
-           switch (code) {
-               case KeyEvent.VK_S:
-                    XCmdToChangeScene.execute(tj,
-                        TJImageScenario.ImageReadyScene.getSingleton(), this);
-                    break;
-           }
         }
 
         @Override
         public void handleKeyUp(KeyEvent e) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            int code = e.getKeyCode();
+
+            switch (code) {
+                case KeyEvent.VK_S:
+                     XCmdToChangeScene.execute(tj,
+                         TJImageScenario.ImageReadyScene.getSingleton(), this);
+                     break;
+            }
         }
 
         @Override
@@ -610,8 +650,21 @@ public class TJImageScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
             TJImageScenario scenario = (TJImageScenario)this.mScenario;
-            scenario.drawPageAndContent(g2);
+            
+            Rectangle clipRect = scenario.getTotalPageBounds(tj);
+            int startX = clipRect.x;
+            int startY = clipRect.y;
+            int pageWidth = clipRect.width / 2;
+            int pageHeight = clipRect.height;
+            
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
+            if (curPage == null) return;
+            
+            scenario.drawPageAndContent(g2, canvas, curPage, startX, startY,
+                pageWidth, pageHeight);
         }
 
         @Override
@@ -641,7 +694,8 @@ public class TJImageScenario extends XScenario {
         }
     }
     
-    private void drawPageStructure(Graphics2D g2, int startX, int startY, int pageWidth, int pageHeight) {
+    private void drawPageStructure(Graphics2D g2, int startX, int startY,
+        int pageWidth, int pageHeight) {
         // left page
         g2.setColor(Color.WHITE);
         g2.fillRect(startX, startY, pageWidth, pageHeight);
@@ -662,24 +716,17 @@ public class TJImageScenario extends XScenario {
         g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
     }
     
-    private void drawPageAndContent(Graphics2D g2) {
-        TJ tj = (TJ)this.getApp();
-        TJCanvas2D canvas = tj.getCanvas2D();
-
-        Rectangle clipRect = this.getTotalPageBounds(tj);
-        int startX = clipRect.x;
-        int startY = clipRect.y;
-        int pageWidth = clipRect.width / 2;
-        int pageHeight = clipRect.height;
-
-        TJPage[] curPage = tj.getPageMgr().getCurPage();
-        if (curPage == null) return;
-
-        this.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
-
-        Shape oldClip = g2.getClip();
-        g2.setClip(clipRect);
-
+    private void drawPageAndContent(Graphics2D g2,
+        TJCanvas2D canvas, TJPage[] curPage, int startX, int startY,
+        int pageWidth, int pageHeight) {
+        drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+        
+        // clipping the pages
+        Shape originalClip = g2.getClip();
+        Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+        g2.setClip(totalPageArea);
+            
+        // draw content
         if (curPage!= null) {
             canvas.drawImages(g2, curPage[0].getImages());
             canvas.drawImages(g2, curPage[1].getImages());
@@ -691,9 +738,40 @@ public class TJImageScenario extends XScenario {
             canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
 
             canvas.drawCurPtCurve(g2);
+            drawSelectedImageBorder(g2);
         }
 
-        g2.setClip(oldClip);
+        g2.setClip(originalClip);
+    }
+    
+    private void drawSelectedImageBorder(Graphics2D g2) {
+        if (mSelectedImage == null) return;
+
+        double x = mSelectedImage.getX();
+        double y = mSelectedImage.getY();
+        double rotation = mSelectedImage.getRotation();
+        double scale = mSelectedImage.getScale();
+
+        int w = mSelectedImage.getWidth();
+        int h = mSelectedImage.getHeight();
+        
+        java.awt.geom.AffineTransform saveAT = g2.getTransform();
+        Stroke oldStroke = g2.getStroke();
+        Color oldColor = g2.getColor();
+
+        g2.translate(x, y);
+        g2.rotate(rotation);
+        g2.scale(scale, scale); 
+        
+        g2.setColor(SELECTION_BORDER_COLOR);
+        g2.setStroke(new BasicStroke(
+        (float)SELECTION_STROKE.getLineWidth() / (float)scale));
+
+        g2.drawRect(-w / 2, -h / 2, w, h);
+
+        g2.setTransform(saveAT);
+        g2.setStroke(oldStroke);
+        g2.setColor(oldColor);
     }
     
     private void handleLongTap(TJ tj, Point pt) {
@@ -726,7 +804,7 @@ public class TJImageScenario extends XScenario {
                     Rectangle totalBounds = this.getTotalPageBounds(tj);
                     int midX = totalBounds.x + totalBounds.width / 2;
 
-                    TJPage[] curPages = tj.getPageMgr().getCurPage();
+                    TJPage[] curPages = tj.getJournalBookMgr().getCurPage();
                     if (pt.x < midX) {
                         curPages[0].addImage(newImg);
                     } else {

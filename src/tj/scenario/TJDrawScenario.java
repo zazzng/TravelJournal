@@ -119,10 +119,10 @@ public class TJDrawScenario extends XScenario {
             Rectangle rightBounds = scenario.getRightPageBounds();
             
             if (leftBounds.contains(pt)) {
-                scenario.mTargetPage = tj.getPageMgr().getCurPage()[0];
+                scenario.mTargetPage = tj.getJournalBookMgr().getCurPage()[0];
                 scenario.mTargetBounds = leftBounds;
             } else if (rightBounds.contains(pt)) {
-                scenario.mTargetPage = tj.getPageMgr().getCurPage()[1];
+                scenario.mTargetPage = tj.getJournalBookMgr().getCurPage()[1];
                 scenario.mTargetBounds = rightBounds;
             }
             if (scenario.mTargetPage != null) {
@@ -190,7 +190,7 @@ public class TJDrawScenario extends XScenario {
             int pageWidth = leftBounds.width;
             int pageHeight = leftBounds.height;
 
-            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
             if (curPage == null) return;
             
             scenario.drawPageAndContent(g2, canvas, curPage, startX, startY, pageWidth, pageHeight);
@@ -333,24 +333,10 @@ public class TJDrawScenario extends XScenario {
             int pageWidth = leftBounds.width;
             int pageHeight = leftBounds.height;
 
-            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
             if (curPage == null) return;
             
-            scenario.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
-            
-            // clipping the pages
-            Shape originalClip = g2.getClip();
-            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
-            g2.setClip(totalPageArea);
-            
-            // draw content
-            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
-            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
-
-            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
-            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
-            
-            canvas.drawCurPtCurve(g2);
+            scenario.drawPageAndContent(g2, canvas, curPage, startX, startY, pageWidth, pageHeight);
         }
         @Override
         public void renderScreenObjects(Graphics2D g2) {
@@ -406,11 +392,25 @@ public class TJDrawScenario extends XScenario {
     private void drawPageAndContent(Graphics2D g2, TJCanvas2D canvas, TJPage[] curPage, int startX, int startY, int pageWidth, int pageHeight) {
         drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
         
-        canvas.drawPtCurves(g2, curPage[0].getPtCurves());
-        canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+        // clipping the pages
+        Shape originalClip = g2.getClip();
+        Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+        g2.setClip(totalPageArea);
+            
+        // draw content
+        if (curPage!= null) {
+            canvas.drawImages(g2, curPage[0].getImages());
+            canvas.drawImages(g2, curPage[1].getImages());
+
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+
+            canvas.drawCurPtCurve(g2);
+        }
         
-        canvas.drawCurPtCurve(g2);
-        canvas.drawPtCurves(g2, curPage[1].getPtCurves());
-        canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+        g2.setClip(originalClip);
     }
 }

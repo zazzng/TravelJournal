@@ -155,6 +155,7 @@ public class TJHomeScenario extends XScenario {
             this.mTopNavPanel.add(dummy, BorderLayout.EAST);
             
             mapBtn.addActionListener(e -> {
+                tj.getJournalBookMgr().saveJournal();
                 XCmdToChangeScene.execute(tj,
                     TJMapScenario.MapReadyScene.getSingleton(), null);
             });
@@ -176,15 +177,15 @@ public class TJHomeScenario extends XScenario {
             // create buttons
 //            mLoadBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
 //                home.mLoadIcon, diameter);
-            mSaveBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
-                home.mSaveIcon, diameter);
+//            mSaveBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+//                home.mSaveIcon, diameter);
             mDeleteBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
                 home.mDeleteIcon, diameter);
             mAddBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
                 home.mAddIcon, diameter);
             
 //            mLoadBtn.setToolTipText("Load Journal");
-            mSaveBtn.setToolTipText("Save Journal");
+//            mSaveBtn.setToolTipText("Save Journal");
             mDeleteBtn.setToolTipText("Delete Page");
             mAddBtn.setToolTipText("Add Page");
             
@@ -195,9 +196,9 @@ public class TJHomeScenario extends XScenario {
             mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
             
 //            mBottomNavPanel.add(mLoadBtn);
-            mBottomNavPanel.add(mSaveBtn);
-            mBottomNavPanel.add(mAddBtn);
+//            mBottomNavPanel.add(mSaveBtn);
             mBottomNavPanel.add(mDeleteBtn);
+            mBottomNavPanel.add(mAddBtn);
 
             // connect actions
 //            mLoadBtn.addActionListener(e -> {
@@ -207,7 +208,7 @@ public class TJHomeScenario extends XScenario {
 //                    ex.printStackTrace();
 //                }
 //            });
-            mSaveBtn.addActionListener(e -> bookMgr.saveJournal());
+//            mSaveBtn.addActionListener(e -> bookMgr.saveJournal());
             mAddBtn.addActionListener(e -> bookMgr.addEmptyPage());
             mDeleteBtn.addActionListener(e -> bookMgr.deleteCurPage());
         }
@@ -451,6 +452,9 @@ public class TJHomeScenario extends XScenario {
         at.translate(-drawModeX, -drawModeY);
         
         g2.transform(at);
+        
+        canvas.drawImages(g2, curPage[0].getImages());
+        canvas.drawImages(g2, curPage[1].getImages());
         
         canvas.drawPtCurves(g2, curPage[0].getPtCurves());
         canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
