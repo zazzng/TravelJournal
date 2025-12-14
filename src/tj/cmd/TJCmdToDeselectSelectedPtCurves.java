@@ -1,9 +1,11 @@
-package tj.Command;
+package tj.cmd;
 
 import java.util.ArrayList;
 import tj.TJ;
+import tj.TJPage;
 import tj.TJPtCurve;
 import tj.scenario.TJDefaultScenario;
+import tj.scenario.TJDrawScenario;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XLoggableCmd;
@@ -29,15 +31,27 @@ public class TJCmdToDeselectSelectedPtCurves extends XLoggableCmd {
     @Override
     protected boolean defineCmd() {
         TJ tj = (TJ)this.mApp;
-        this.mUnselectedPtCurves = tj.getPtCurveMgr().getPtCurves();
-        this.mSelectedPtCurves = tj.getPtCurveMgr().getSelectedPtCurves();
+        
+        // Get selected curves from PAGES, not from manager
+        TJPage[] curPage = tj.getPageMgr().getCurPage();
+        if (curPage != null) {
+            this.mSelectedPtCurves = new ArrayList<>(curPage[0].getSelectedPtCurves());
+            this.mSelectedPtCurves.addAll(curPage[1].getSelectedPtCurves());
+        } else {
+            this.mSelectedPtCurves = new ArrayList<>();
+        }
+        
         this.mNumOfDeselectedPtCurves = this.mSelectedPtCurves.size();
         
-        this.mUnselectedPtCurves.addAll(this.mSelectedPtCurves);
-        this.mSelectedPtCurves.clear();
+        // Clear selected curves from pages
+        curPage[0].getSelectedPtCurves().clear();
+        curPage[1].getSelectedPtCurves().clear();
+        
+        // Clear from manager
+        tj.getPtCurveMgr().getSelectedPtCurves().clear();
         
         XCmdToChangeScene.execute(tj,
-            TJDefaultScenario.ReadyScene.getSingleton(), null);
+            TJDrawScenario.DrawReadyScene.getSingleton(), null);
         return true;
     }
 

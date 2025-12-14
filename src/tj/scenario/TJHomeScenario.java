@@ -432,13 +432,13 @@ public class TJHomeScenario extends XScenario {
         drawSinglePage(g2, curPage[1], rightPageX, startY, pageWidth, pageHeight, 
             CURRENT_PAGE_COLOR);
         
-        double drawModeRatio = TJCanvas2D.PAGE_EDIT_HEIGHT_RATIO; // 0.85
-        int drawModeH = (int)(appHeight * drawModeRatio);
-        int drawModeW = (int)(drawModeH * TJCanvas2D.PAGE_ASPECT_RATIO);
-        int drawModeX = (appWidth - drawModeW * 2) / 2;
-        int drawModeY = (appHeight - drawModeH) / 2;
+        // double drawModeRatio = TJCanvas2D.PAGE_EDIT_HEIGHT_RATIO; // 0.85
+        // int drawModeH = (int)(appHeight * drawModeRatio);
+        // int drawModeW = (int)(drawModeH * TJCanvas2D.PAGE_ASPECT_RATIO);
+        // int drawModeX = (appWidth - drawModeW * 2) / 2;
+        // int drawModeY = (appHeight - drawModeH) / 2;
         
-        double scale = (double) pageHeight / drawModeH;
+        // double scale = (double) pageHeight / drawModeH;
         
         AffineTransform oldAT = g2.getTransform();
         AffineTransform at = new AffineTransform();
@@ -446,9 +446,9 @@ public class TJHomeScenario extends XScenario {
         // 3. Move to the new (Home) position
         at.translate(startX, startY);
         // 2. Scale the content
-        at.scale(scale, scale);
-        // 1. Move from the original (Draw) position to 0,0
-        at.translate(-drawModeX, -drawModeY);
+        // at.scale(scale, scale);
+        // // 1. Move from the original (Draw) position to 0,0
+        // at.translate(-drawModeX, -drawModeY);
         
         g2.transform(at);
         

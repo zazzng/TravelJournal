@@ -3,6 +3,7 @@ package tj;
 import tj.scenario.TJColorScenario;
 import tj.scenario.TJDefaultScenario;
 import tj.scenario.TJDrawScenario;
+import tj.scenario.TJEmojiScenario;
 import tj.scenario.TJHomeScenario;
 import tj.scenario.TJImageScenario;
 import tj.scenario.TJMapScenario;
@@ -26,6 +27,7 @@ public class TJScenarioMgr extends XScenarioMgr {
         this.addScenario(TJNavigateScenario.createSingleton(this.mApp));
         this.addScenario(TJColorScenario.createSingleton(this.mApp));
         this.addScenario(TJImageScenario.createSingleton(this.mApp));
+        this.addScenario(TJEmojiScenario.createSingleton(this.mApp));
     }
 
     @Override

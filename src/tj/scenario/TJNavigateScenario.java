@@ -1,22 +1,33 @@
 package tj.scenario;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+
+import javax.swing.JPanel;
+
 import tj.TJ;
 import tj.TJCanvas2D;
+import tj.TJPage;
 import tj.TJScene;
 import tj.TJXform;
 import tj.cmd.TJCmdToSetStartScreenPt;
 import tj.cmd.TJCmdToTranslateTo;
 import tj.cmd.TJCmdToZoomTo;
+import utils.TJNavPanel;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJNavigateScenario extends XScenario {
+    private JPanel mTopNavPanel;
+    private JPanel mBottomNavPanel;
     // singleton pattern
     private static TJNavigateScenario mSingleton = null;
     public static TJNavigateScenario getSingle() {
@@ -97,6 +108,36 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
+            
+            Rectangle leftBounds = scenario.getLeftPageBounds();
+            
+            int startX = leftBounds.x;
+            int startY = leftBounds.y;
+            int pageWidth = leftBounds.width;
+            int pageHeight = leftBounds.height;
+
+            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) return;
+            
+            navigationScenario.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+            
+            // clipping the pages
+            Shape originalClip = g2.getClip();
+            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+            g2.setClip(totalPageArea);
+            
+            // draw content
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
         }
 
         @Override
@@ -105,15 +146,34 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            
+            if (navigationScenario.mTopNavPanel == null) {
+                navigationScenario.initializeTopNav();
+            }
+            if (navigationScenario.mBottomNavPanel == null) {
+                navigationScenario.initializeBottomNav();
+            }
+            
+            tj.setTopPanel(navigationScenario.mTopNavPanel);
+            tj.setBottomPanel(navigationScenario.mBottomNavPanel);
         }
 
         @Override
         public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
 
         @Override
         public void drawBackground(Graphics2D g2) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
     }
     
@@ -178,6 +238,36 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
+            
+            Rectangle leftBounds = scenario.getLeftPageBounds();
+            
+            int startX = leftBounds.x;
+            int startY = leftBounds.y;
+            int pageWidth = leftBounds.width;
+            int pageHeight = leftBounds.height;
+
+            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) return;
+            
+            navigationScenario.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+            
+            // clipping the pages
+            Shape originalClip = g2.getClip();
+            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+            g2.setClip(totalPageArea);
+            
+            // draw content
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
         }
 
         @Override
@@ -188,15 +278,34 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            
+            if (navigationScenario.mTopNavPanel == null) {
+                navigationScenario.initializeTopNav();
+            }
+            if (navigationScenario.mBottomNavPanel == null) {
+                navigationScenario.initializeBottomNav();
+            }
+            
+            tj.setTopPanel(navigationScenario.mTopNavPanel);
+            tj.setBottomPanel(navigationScenario.mBottomNavPanel);
         }
 
         @Override
         public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
 
         @Override
         public void drawBackground(Graphics2D g2) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
     }
     
@@ -258,6 +367,35 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
+            
+            Rectangle leftBounds = scenario.getLeftPageBounds();
+            
+            int startX = leftBounds.x;
+            int startY = leftBounds.y;
+            int pageWidth = leftBounds.width;
+            int pageHeight = leftBounds.height;
+
+            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) return;
+            
+            ((TJNavigateScenario)this.mScenario).drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+            
+            // clipping the pages
+            Shape originalClip = g2.getClip();
+            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+            g2.setClip(totalPageArea);
+            
+            // draw content
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
         }
 
         @Override
@@ -267,15 +405,33 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            
+            if (navigationScenario.mTopNavPanel == null) {
+                navigationScenario.initializeTopNav();
+            }
+            if (navigationScenario.mBottomNavPanel == null) {
+                navigationScenario.initializeBottomNav();
+            }
+            
+            tj.setTopPanel(navigationScenario.mTopNavPanel);
+            tj.setBottomPanel(navigationScenario.mBottomNavPanel);
         }
 
         @Override
-        public void wrapUp() {
+        public void wrapUp() {TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
 
         @Override
         public void drawBackground(Graphics2D g2) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
     }
     
@@ -340,6 +496,35 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderWorldObjects(Graphics2D g2) {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
+            
+            Rectangle leftBounds = scenario.getLeftPageBounds();
+            
+            int startX = leftBounds.x;
+            int startY = leftBounds.y;
+            int pageWidth = leftBounds.width;
+            int pageHeight = leftBounds.height;
+
+            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) return;
+            
+            ((TJNavigateScenario)this.mScenario).drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+            
+            // clipping the pages
+            Shape originalClip = g2.getClip();
+            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+            g2.setClip(totalPageArea);
+            
+            // draw content
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
         }
 
         @Override
@@ -349,15 +534,34 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void getReady() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJNavigateScenario navigationScenario = (TJNavigateScenario)this.mScenario;
+            
+            if (navigationScenario.mTopNavPanel == null) {
+                navigationScenario.initializeTopNav();
+            }
+            if (navigationScenario.mBottomNavPanel == null) {
+                navigationScenario.initializeBottomNav();
+            }
+            
+            tj.setTopPanel(navigationScenario.mTopNavPanel);
+            tj.setBottomPanel(navigationScenario.mBottomNavPanel);
         }
 
         @Override
         public void wrapUp() {
+            TJ tj = (TJ)this.mScenario.getApp();
+            tj.setTopPanel(null);
+            tj.setBottomPanel(null);
         }
 
         @Override
         public void drawBackground(Graphics2D g2) {
-            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+            TJ tj = (TJ)this.mScenario.getApp();
+            TJCanvas2D canvas = tj.getCanvas2D();
+            
+            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
+            g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
         }
     }
     
@@ -373,5 +577,52 @@ public class TJNavigateScenario extends XScenario {
         g2.setStroke(TJCanvas2D.STROKE_CROSS_HAIR);
         g2.draw(vline);
         g2.draw(hline);
+    }
+
+    public void drawPageStructure(Graphics2D g2, int startX, int startY, int pageWidth, int pageHeight) {
+        // left page
+        g2.setColor(Color.WHITE);
+        g2.fillRect(startX, startY, pageWidth, pageHeight);
+        g2.setStroke(TJHomeScenario.PAGE_BORDER_STROKE);
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.drawRect(startX, startY, pageWidth, pageHeight);
+        
+        // right page
+        g2.setColor(Color.WHITE);
+        g2.fillRect(startX + pageWidth, startY, pageWidth, pageHeight);
+        g2.setStroke(TJHomeScenario.PAGE_BORDER_STROKE);
+        g2.setColor(Color.LIGHT_GRAY);
+        g2.drawRect(startX + pageWidth, startY, pageWidth, pageHeight);
+
+        // divider
+        g2.setStroke(new BasicStroke(2.0f));
+        g2.setColor(new Color(200, 200, 200)); 
+        g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
+    }
+    
+    public void drawPageAndContent(Graphics2D g2, TJCanvas2D canvas, TJPage[] curPage, int startX, int startY, int pageWidth, int pageHeight) {
+        this.drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+        
+        canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+        canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+        
+        canvas.drawCurPtCurve(g2);
+        canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+        canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+    }
+
+    public void initializeTopNav() {
+            TJ tj = (TJ)this.mApp;
+            String title = "Untitled Journal";
+            if (tj.getJournalBookMgr().getCurBook() != null) {
+                title = tj.getJournalBookMgr().getCurBook().getTitle();
+            }
+            
+            this.mTopNavPanel = TJNavPanel.createTopNavPanel(tj, title);
+        }
+        
+    public void initializeBottomNav() {
+        TJ tj = (TJ)this.mApp;
+        this.mBottomNavPanel = TJNavPanel.createBottomNavPanel(tj, null);
     }
 }

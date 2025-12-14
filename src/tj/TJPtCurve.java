@@ -21,6 +21,14 @@ public class TJPtCurve implements Serializable {
         return this.mPts;
     }
     
+    private TJPage mTargetPage = null;
+    public TJPage getTargetPage() {
+        return this.mTargetPage;
+    }
+    public void setTargetPage(TJPage page) {
+        this.mTargetPage = page;
+    }
+    
     private Rectangle2D.Double mBoundingBox = null;
     public Rectangle2D.Double getBoundingBox() {
         return this.mBoundingBox;

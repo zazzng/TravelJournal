@@ -55,7 +55,7 @@ public class TJDrawScenario extends XScenario {
         super(app);
     }
     
-    private void updatePageBounds(TJ tj) {
+    public void updatePageBounds(TJ tj) {
         TJCanvas2D canvas = tj.getCanvas2D();
         int appWidth = canvas.getWidth();
         int appHeight = canvas.getHeight();
@@ -115,14 +115,19 @@ public class TJDrawScenario extends XScenario {
             TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
             Point pt = e.getPoint();
             
+            TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) {
+                return;
+            }
+            
             Rectangle leftBounds = scenario.getLeftPageBounds();
             Rectangle rightBounds = scenario.getRightPageBounds();
             
             if (leftBounds.contains(pt)) {
-                scenario.mTargetPage = tj.getPageMgr().getCurPage()[0];
+                scenario.mTargetPage = curPage[0];
                 scenario.mTargetBounds = leftBounds;
             } else if (rightBounds.contains(pt)) {
-                scenario.mTargetPage = tj.getPageMgr().getCurPage()[1];
+                scenario.mTargetPage = curPage[1];
                 scenario.mTargetBounds = rightBounds;
             }
             if (scenario.mTargetPage != null) {
@@ -147,6 +152,9 @@ public class TJDrawScenario extends XScenario {
             int code = e.getKeyCode();
             
             switch (code) {
+                case KeyEvent.VK_SHIFT:
+                    XCmdToChangeScene.execute(tj,
+                        TJSelectScenario.SelectReadyScene.getSingleton(), this);
                 case KeyEvent.VK_UP:
                     System.out.println("add stroke width pls");
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
@@ -156,6 +164,7 @@ public class TJDrawScenario extends XScenario {
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
                         -TJCanvas2D.STROKE_WIDTH_INCREMENT);
                     break;
+                
             }
         }
         
@@ -201,12 +210,17 @@ public class TJDrawScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             TJCanvas2D canvas = tj.getCanvas2D();
 
-            canvas.drawPenTip(g2);
+            // canvas.drawPenTip(g2);
         }
         
         @Override
         public void getReady() {
             TJ tj = (TJ)this.mScenario.getApp();
+            
+            // Auto-create a page if none exists
+            if (tj.getPageMgr().getCurPage() == null) {
+                tj.getPageMgr().addEmptyPage();
+            }
             
             if (this.mTopNavPanel == null) {
                 initializeTopNav();
@@ -357,7 +371,7 @@ public class TJDrawScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             TJCanvas2D canvas = tj.getCanvas2D();
 
-            canvas.drawPenTip(g2);
+            // canvas.drawPenTip(g2);
         }
         
         @Override
@@ -403,7 +417,7 @@ public class TJDrawScenario extends XScenario {
         g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
     }
     
-    private void drawPageAndContent(Graphics2D g2, TJCanvas2D canvas, TJPage[] curPage, int startX, int startY, int pageWidth, int pageHeight) {
+    public void drawPageAndContent(Graphics2D g2, TJCanvas2D canvas, TJPage[] curPage, int startX, int startY, int pageWidth, int pageHeight) {
         drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
         
         canvas.drawPtCurves(g2, curPage[0].getPtCurves());

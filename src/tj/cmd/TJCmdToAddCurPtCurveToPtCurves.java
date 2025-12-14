@@ -3,8 +3,12 @@ package tj.cmd;
 import tj.TJ;
 import tj.TJPage;
 import tj.TJPtCurve;
+import tj.scenario.TJEmojiScenario;
 import x.XApp;
 import x.XLoggableCmd;
+import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 
 public class TJCmdToAddCurPtCurveToPtCurves extends XLoggableCmd {
     // fields
@@ -29,6 +33,7 @@ public class TJCmdToAddCurPtCurveToPtCurves extends XLoggableCmd {
         this.mCurPtCurve = tj.getPtCurveMgr().getCurPtCurve();
         
         if (this.mCurPtCurve.getPts().size() >= 2) {
+            this.mCurPtCurve.setTargetPage(this.mPage);
             this.mPage.getPtCurves().add(this.mCurPtCurve);
         }
         

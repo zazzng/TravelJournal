@@ -218,8 +218,8 @@ public class TJImageScenario extends XScenario {
             g2.setClip(clipRect);
             
             if (curPage!= null) {
-                canvas.drawImages(g2, curPage[0].getImages());
-                canvas.drawImages(g2, curPage[1].getImages());
+                // canvas.drawImages(g2, curPage[0].getImages());
+                // canvas.drawImages(g2, curPage[1].getImages());
                 
                 canvas.drawPtCurves(g2, curPage[0].getPtCurves());
                 canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
@@ -681,8 +681,8 @@ public class TJImageScenario extends XScenario {
         g2.setClip(clipRect);
 
         if (curPage!= null) {
-            canvas.drawImages(g2, curPage[0].getImages());
-            canvas.drawImages(g2, curPage[1].getImages());
+            // canvas.drawImages(g2, curPage[0].getImages());
+            // canvas.drawImages(g2, curPage[1].getImages());
 
             canvas.drawPtCurves(g2, curPage[0].getPtCurves());
             canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());

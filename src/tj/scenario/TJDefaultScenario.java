@@ -9,6 +9,7 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
@@ -28,6 +29,17 @@ import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJDefaultScenario extends XScenario {
+    // Page bounds
+    private Rectangle mLeftPageBounds = null;
+    public Rectangle getLeftPageBounds() {
+        return this.mLeftPageBounds;
+    }
+    
+    private Rectangle mRightPageBounds = null;
+    public Rectangle getRightPageBounds() {
+        return this.mRightPageBounds;
+    }
+    
     // singleton pattern
     private static TJDefaultScenario mSingleton = null;
     public static TJDefaultScenario getSingle() {
@@ -41,6 +53,19 @@ public class TJDefaultScenario extends XScenario {
     }
     private TJDefaultScenario(XApp app) {
         super(app);
+    }
+    
+    public void updatePageBounds(TJ tj) {
+        TJCanvas2D canvas = tj.getCanvas2D();
+        int appWidth = canvas.getWidth();
+        int appHeight = canvas.getHeight();
+        int pageHeight = (int)(appHeight * TJCanvas2D.PAGE_EDIT_HEIGHT_RATIO); 
+        int pageWidth = (int)(pageHeight * TJCanvas2D.PAGE_ASPECT_RATIO);
+        int startX = (appWidth - pageWidth * 2) / 2;
+        int startY = (appHeight - pageHeight) / 2;
+
+        this.mLeftPageBounds = new Rectangle(startX, startY, pageWidth, pageHeight);
+        this.mRightPageBounds = new Rectangle(startX + pageWidth, startY, pageWidth, pageHeight);
     }
 
     @Override
@@ -99,41 +124,37 @@ public class TJDefaultScenario extends XScenario {
         public void renderWorldObjects(Graphics2D g2) {
             TJ tj = (TJ)this.mScenario.getApp();
             TJCanvas2D canvas = tj.getCanvas2D();
+            TJDefaultScenario scenario = (TJDefaultScenario)this.mScenario;
             
-            // Calculate dimensions (same logic as HomeScenario for consistency)
-            int appWidth = canvas.getWidth();
-            int appHeight = canvas.getHeight();
-            int pageHeight = (int)(appHeight * 0.85); // Slightly larger for editing view
-            int pageWidth = (int)(pageHeight * TJCanvas2D.PAGE_ASPECT_RATIO);
-            int startX = (appWidth - pageWidth * 2) / 2;
-            int startY = (appHeight - pageHeight) / 2;
+            Rectangle leftBounds = scenario.getLeftPageBounds();
+            if (leftBounds == null) return;
+            
+            int startX = leftBounds.x;
+            int startY = leftBounds.y;
+            int pageWidth = leftBounds.width;
+            int pageHeight = leftBounds.height;
 
             TJPage[] curPage = tj.getPageMgr().getCurPage();
+            if (curPage == null) return;
             
-            // draw the dark background
-            g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
-            g2.fillRect(0, 0, appWidth, appHeight);
-
-            // 1. Draw Left Page
-            g2.setColor(Color.WHITE);
-            g2.fillRect(startX, startY, pageWidth, pageHeight);
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.drawRect(startX, startY, pageWidth, pageHeight);
+            drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
             
-            // 2. Draw Right Page
-            g2.setColor(Color.WHITE);
-            g2.fillRect(startX + pageWidth, startY, pageWidth, pageHeight);
-            g2.setColor(Color.LIGHT_GRAY);
-            g2.drawRect(startX + pageWidth, startY, pageWidth, pageHeight);
+            // clipping the pages
+            Shape originalClip = g2.getClip();
+            Rectangle totalPageArea = new Rectangle(startX, startY, pageWidth * 2, pageHeight);
+            g2.setClip(totalPageArea);
+            
+            // draw content
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
 
-            // 3. Draw Content (if your TJPage has a draw method)
-            // curPage[0].draw(g2, startX, startY, pageWidth, pageHeight);
-            // curPage[1].draw(g2, startX + pageWidth, startY, pageWidth, pageHeight);
-
-            // 4. Draw The Divider (Light Gray Line)
-            g2.setStroke(new BasicStroke(2.0f));
-            g2.setColor(new Color(200, 200, 200)); // Light Gray
-            g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
+            
+            // restore clip
+            g2.setClip(originalClip);
         }
 
         @Override public void handleMousePress(MouseEvent e) {}
@@ -146,13 +167,22 @@ public class TJDefaultScenario extends XScenario {
         
         @Override public void handleKeyUp(KeyEvent e) {}
         
-        @Override public void updateSupportObjects() {}
+        @Override 
+        public void updateSupportObjects() {
+            ((TJDefaultScenario)this.mScenario).updatePageBounds(
+                (TJ)this.mScenario.getApp());
+        }
         
         @Override public void renderScreenObjects(Graphics2D g2) {}
         
         @Override
         public void getReady() {
             TJ tj = (TJ)this.mScenario.getApp();
+            
+            // Auto-create a page if none exists
+            if (tj.getPageMgr().getCurPage() == null) {
+                tj.getPageMgr().addEmptyPage();
+            }
             
             if (this.mTopNavPanel == null) {
                 initializeTopNav();
@@ -172,5 +202,38 @@ public class TJDefaultScenario extends XScenario {
             tj.setBottomPanel(null);
         }
 
+
+        public void drawPageAndContent(Graphics2D g2, TJCanvas2D canvas, TJPage[] curPage, int startX, int startY,
+            int pageWidth, int pageHeight) {
+            drawPageStructure(g2, startX, startY, pageWidth, pageHeight);
+            
+            canvas.drawPtCurves(g2, curPage[0].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
+            
+            canvas.drawCurPtCurve(g2);
+            canvas.drawPtCurves(g2, curPage[1].getPtCurves());
+            canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
+        }
+        
+        private void drawPageStructure(Graphics2D g2, int startX, int startY, int pageWidth, int pageHeight) {
+            // left page
+            g2.setColor(Color.WHITE);
+            g2.fillRect(startX, startY, pageWidth, pageHeight);
+            g2.setStroke(TJHomeScenario.PAGE_BORDER_STROKE);
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawRect(startX, startY, pageWidth, pageHeight);
+            
+            // right page
+            g2.setColor(Color.WHITE);
+            g2.fillRect(startX + pageWidth, startY, pageWidth, pageHeight);
+            g2.setStroke(TJHomeScenario.PAGE_BORDER_STROKE);
+            g2.setColor(Color.LIGHT_GRAY);
+            g2.drawRect(startX + pageWidth, startY, pageWidth, pageHeight);
+
+            // divider
+            g2.setStroke(new BasicStroke(2.0f));
+            g2.setColor(new Color(200, 200, 200)); 
+            g2.drawLine(startX + pageWidth, startY, startX + pageWidth, startY + pageHeight);
+        }
     }
 }
