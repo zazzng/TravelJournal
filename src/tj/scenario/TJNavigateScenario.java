@@ -9,9 +9,9 @@ import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJScene;
 import tj.TJXform;
-import tj.Command.TJCmdToSetStartScreenPt;
-import tj.Command.TJCmdToTranslateTo;
-import tj.Command.TJCmdToZoomRotateTo;
+import tj.cmd.TJCmdToSetStartScreenPt;
+import tj.cmd.TJCmdToTranslateTo;
+import tj.cmd.TJCmdToZoomTo;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
@@ -36,8 +36,8 @@ public class TJNavigateScenario extends XScenario {
     protected void addScenes() {
         this.addScene(TJNavigateScenario.PanReadyScene.createSingleton(this));
         this.addScene(TJNavigateScenario.PanScene.createSingleton(this));
-        this.addScene(TJNavigateScenario.ZoomRotateReadyScene.createSingleton(this));
-        this.addScene(TJNavigateScenario.ZoomRotateScene.createSingleton(this));
+        this.addScene(TJNavigateScenario.ZoomReadyScene.createSingleton(this));
+        this.addScene(TJNavigateScenario.ZoomScene.createSingleton(this));
     }
 
     public static class PanReadyScene extends TJScene {
@@ -109,6 +109,11 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void wrapUp() {
+        }
+
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
         }
     }
     
@@ -188,21 +193,26 @@ public class TJNavigateScenario extends XScenario {
         @Override
         public void wrapUp() {
         }
+
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
     }
     
-    public static class ZoomRotateReadyScene extends TJScene {
+    public static class ZoomReadyScene extends TJScene {
         // singleton pattern
-        private static ZoomRotateReadyScene mSingleton = null;
-        public static ZoomRotateReadyScene getSingleton() {
-            assert(ZoomRotateReadyScene.mSingleton != null);
-            return ZoomRotateReadyScene.mSingleton;
+        private static ZoomReadyScene mSingleton = null;
+        public static ZoomReadyScene getSingleton() {
+            assert(ZoomReadyScene.mSingleton != null);
+            return ZoomReadyScene.mSingleton;
         }
-        public static ZoomRotateReadyScene createSingleton(XScenario scenario) {
-            assert(ZoomRotateReadyScene.mSingleton == null);
-            ZoomRotateReadyScene.mSingleton = new ZoomRotateReadyScene(scenario);
-            return ZoomRotateReadyScene.mSingleton;
+        public static ZoomReadyScene createSingleton(XScenario scenario) {
+            assert(ZoomReadyScene.mSingleton == null);
+            ZoomReadyScene.mSingleton = new ZoomReadyScene(scenario);
+            return ZoomReadyScene.mSingleton;
         }
-        private ZoomRotateReadyScene(XScenario scenario) {
+        private ZoomReadyScene(XScenario scenario) {
             super(scenario);
         }
 
@@ -213,7 +223,7 @@ public class TJNavigateScenario extends XScenario {
             TJCmdToSetStartScreenPt.execute(tj, pt);
             
             XCmdToChangeScene.execute(tj,
-                TJNavigateScenario.ZoomRotateScene.getSingleton(),
+                TJNavigateScenario.ZoomScene.getSingleton(),
                 this.getReturnScene());
         }
 
@@ -252,8 +262,7 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderScreenObjects(Graphics2D g2) {
-            TJNavigateScenario scenario = (TJNavigateScenario) this.mScenario;
-            scenario.drawZoomRotateCrossHair(g2);
+            
         }
 
         @Override
@@ -263,21 +272,26 @@ public class TJNavigateScenario extends XScenario {
         @Override
         public void wrapUp() {
         }
+
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
     }
     
-    public static class ZoomRotateScene extends TJScene {
+    public static class ZoomScene extends TJScene {
         // singleton pattern
-        private static ZoomRotateScene mSingleton = null;
-        public static ZoomRotateScene getSingleton() {
-            assert(ZoomRotateScene.mSingleton != null);
-            return ZoomRotateScene.mSingleton;
+        private static ZoomScene mSingleton = null;
+        public static ZoomScene getSingleton() {
+            assert(ZoomScene.mSingleton != null);
+            return ZoomScene.mSingleton;
         }
-        public static ZoomRotateScene createSingleton(XScenario scenario) {
-            assert(ZoomRotateScene.mSingleton == null);
-            ZoomRotateScene.mSingleton = new ZoomRotateScene(scenario);
-            return ZoomRotateScene.mSingleton;
+        public static ZoomScene createSingleton(XScenario scenario) {
+            assert(ZoomScene.mSingleton == null);
+            ZoomScene.mSingleton = new ZoomScene(scenario);
+            return ZoomScene.mSingleton;
         }
-        private ZoomRotateScene(XScenario scenario) {
+        private ZoomScene(XScenario scenario) {
             super(scenario);
         }
 
@@ -290,7 +304,7 @@ public class TJNavigateScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             Point pt = e.getPoint();
             
-            TJCmdToZoomRotateTo.execute(tj, pt);
+            TJCmdToZoomTo.execute(tj, pt);
         }
 
         @Override
@@ -299,7 +313,7 @@ public class TJNavigateScenario extends XScenario {
             
             TJCmdToSetStartScreenPt.execute(tj, null);
             XCmdToChangeScene.execute(tj,
-                TJNavigateScenario.ZoomRotateReadyScene.getSingleton(),
+                TJNavigateScenario.ZoomReadyScene.getSingleton(),
                 this.getReturnScene());
         }
 
@@ -330,8 +344,7 @@ public class TJNavigateScenario extends XScenario {
 
         @Override
         public void renderScreenObjects(Graphics2D g2) {
-            TJNavigateScenario scenario = (TJNavigateScenario) this.mScenario;
-            scenario.drawZoomRotateCrossHair(g2);
+            
         }
 
         @Override
@@ -341,18 +354,11 @@ public class TJNavigateScenario extends XScenario {
         @Override
         public void wrapUp() {
         }
-    }
-    
-    private void drawZoomRotateCrossHair(Graphics2D g2) {
-        double r = TJCanvas2D.ZOOM_ROTATE_CROSS_HAIR_RADIUS;
-        Point ctr = TJXform.PIVOT_PT;
-        Line2D hline = new Line2D.Double(ctr.x - r, ctr.y, ctr.x + r, ctr.y);
-        Line2D vline = new Line2D.Double(ctr.x, ctr.y - r, ctr.x, ctr.y + r);
 
-        g2.setColor(TJCanvas2D.COLOR_CROSS_HAIR);
-        g2.setStroke(TJCanvas2D.STROKE_CROSS_HAIR);
-        g2.draw(vline);
-        g2.draw(hline);
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
     }
     
     private void drawPanCrossHair(Graphics2D g2) {

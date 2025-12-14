@@ -1,21 +1,35 @@
 package tj;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.io.IOException;
+import java.util.ArrayList;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+
 import x.XApp;
 import x.XLogMgr;
 import x.XScenarioMgr;
 
 public class TJ extends XApp {
     // fields
-    public static int WIDTH = 800;
-    public static int HEIGHT = 600;
-    
     private JFrame mFrame = null;
     private TJCanvas2D mCanvas2D = null;
     public TJCanvas2D getCanvas2D() {
         return this.mCanvas2D;
     }
-
+    
+    private JPanel mTopPanel = null;
+    public JPanel getCurTopPanel() {
+        return this.mTopPanel;
+    }
+    
+    private JPanel mBottomPanel = null;
+    public JPanel getCurBottomPanel() {
+        return this.mBottomPanel;
+    }
+    
     private TJXform mXform = null;
     public TJXform getXform() {
         return this.mXform;
@@ -31,6 +45,11 @@ public class TJ extends XApp {
         return this.mEventListener;
     }
     
+    private TJJournalBookMgr mJournalBookMgr = null;
+    public TJJournalBookMgr getJournalBookMgr() {
+        return this.mJournalBookMgr;
+    }
+    
     private TJPenMarkMgr mPenMarkMgr = null;
     public TJPenMarkMgr getPenMarkMgr() {
         return this.mPenMarkMgr;
@@ -40,7 +59,7 @@ public class TJ extends XApp {
     public TJPtCurveMgr getPtCurveMgr() {
         return this.mPtCurveMgr;
     }
-    
+
     private XScenarioMgr mScenarioMgr = null;
     @Override
     public XScenarioMgr getScenarioMgr() {
@@ -52,14 +71,18 @@ public class TJ extends XApp {
     public XLogMgr getLogMgr() {
         return this.mLogMgr;
     }
-
-    // constructor
-    public TJ() {
-        this.mFrame = new JFrame("JustSketchIt");
+    
+    public TJ() throws IOException {
+        // create components
+        // 1) Frame, 2) Canvas, 3) Other components
+        // 4) Event listeners, 5) Managers
+        this.mFrame = new JFrame("TravelJournal");
+        this.mFrame.setLayout(new BorderLayout());
         this.mCanvas2D = new TJCanvas2D(this);
         this.mXform = new TJXform();
         this.mColorChooser = new TJColorChooser();
         this.mEventListener = new TJEventListener(this);
+        this.mJournalBookMgr = new TJJournalBookMgr(this);
         this.mPenMarkMgr = new TJPenMarkMgr();
         this.mPtCurveMgr = new TJPtCurveMgr();
         this.mScenarioMgr = new TJScenarioMgr(this);
@@ -73,13 +96,52 @@ public class TJ extends XApp {
         this.mCanvas2D.addKeyListener(this.mEventListener);
         
         // build and show visual components
-        this.mFrame.add(this.mCanvas2D);
-        this.mFrame.setSize(WIDTH, HEIGHT);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        double widthRatio = 0.75;
+        double heightRatio = 0.75;
+        int appWidth = (int)(screenSize.width * widthRatio);
+        int appHeight = (int)(screenSize.height * heightRatio);
+        
+        this.mFrame.add(this.mCanvas2D, BorderLayout.CENTER);
+        this.mFrame.setSize(appWidth, appHeight);
         this.mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.mFrame.setVisible(true);
     }
-
-    public static void main(String[] args) {
+    
+    public void setTopPanel(JPanel newPanel) {
+        if (this.mTopPanel != null) {
+            this.mFrame.remove(this.mTopPanel);
+        }
+        
+        this.mTopPanel = newPanel;
+        
+        if (this.mTopPanel != null) {
+            this.mFrame.add(this.mTopPanel, BorderLayout.NORTH);
+        }
+        
+        refreshFrame();
+    }
+    
+    public void setBottomPanel(JPanel newPanel) {
+        if (this.mBottomPanel != null) {
+            this.mFrame.remove(this.mBottomPanel);
+        }
+        
+        this.mBottomPanel = newPanel;
+        
+        if (this.mBottomPanel != null) {
+            this.mFrame.add(this.mBottomPanel, BorderLayout.SOUTH);
+        }
+        
+        refreshFrame();
+    }
+    
+    private void refreshFrame() {
+        this.mFrame.revalidate();
+        this.mFrame.repaint();
+    }
+    
+    public static void main(String[] args) throws IOException {
         // create a TJ instance
         new TJ();
     }

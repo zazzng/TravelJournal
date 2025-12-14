@@ -49,6 +49,15 @@ public class TJXform {
         }
     }
     
+    public void setFitToTransform(double scale, double transX, double transY) {
+        this.mCurXformFromWorldToScreen.setToIdentity();
+        this.mCurXformFromWorldToScreen.scale(scale, scale);
+        this.mCurXformFromWorldToScreen.translate(transX / scale,
+            transY / scale);
+        
+        this.updateCurXformFromScreenToWorld();
+    }
+    
     public Point calcPtFromWorldToScreen(Point2D.Double worldPt) {
         // transform a point from World coordinate to Screen coordinate
         Point screenPt = new Point();
@@ -112,6 +121,39 @@ public class TJXform {
             -worldPivotPt.x, -worldPivotPt.y);
        
         // call whenever mCurTransfirmFromWorldToScreen changes
+        this.updateCurXformFromScreenToWorld();
+        
+        return true;
+    }
+    
+    public boolean zoomTo(Point pt) {
+        if (this.mStartScreenPt == null) {
+            return false;
+        }
+        
+        this.mCurXformFromWorldToScreen.setTransform(
+            this.mStartXformFromWorldToScreen);
+        
+        double d0 = TJXform.PIVOT_PT.distance(this.mStartScreenPt);
+        if (d0 < TJXform.MIN_START_ARM_LENGTH_FOR_SCALING) {
+            return false;
+        }
+        double d1 = TJXform.PIVOT_PT.distance(pt);
+        double s = d1 / d0;
+
+        Point2D.Double worldPivotPt = this.calcPtFromScreenToWorld(
+            TJXform.PIVOT_PT);
+        
+        this.mCurXformFromWorldToScreen.translate(
+            worldPivotPt.x, worldPivotPt.y);
+            
+        // scale step (ZOOM)
+        this.mCurXformFromWorldToScreen.scale(s, s);
+        
+        // translate back from pivot in world space
+        this.mCurXformFromWorldToScreen.translate(
+            -worldPivotPt.x, -worldPivotPt.y);
+        
         this.updateCurXformFromScreenToWorld();
         
         return true;

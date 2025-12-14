@@ -21,6 +21,7 @@ public abstract class TJScene extends XScene {
     
     // other abstract methods
     public abstract void updateSupportObjects();
+    public abstract void drawBackground(Graphics2D g2);
     public abstract void renderWorldObjects(Graphics2D g2);
     public abstract void renderScreenObjects(Graphics2D g2);
 }

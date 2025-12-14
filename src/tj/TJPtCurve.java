@@ -5,10 +5,12 @@ import java.awt.Color;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class TJPtCurve {
+public class TJPtCurve implements Serializable {
     // constants
+    private static final long serialVersionUID = 1L;
     public static final double MIN_DIST_BTWN_PTS = 5.0;
     
     // fields
@@ -32,8 +34,16 @@ public class TJPtCurve {
         this.mColor = c;
     }
     
-    private Stroke mStroke = null;
+    // Stroke is not serializable -> store its properties instead
+    private float strokeWidth;
+    private int strokeEndCap;
+    private int strokeLineJoin;
+    
+    private transient Stroke mStroke = null;
     public Stroke getStroke() {
+        if (mStroke == null) {
+            mStroke = new BasicStroke(strokeWidth, strokeEndCap, strokeLineJoin);
+        }
         return this.mStroke;
     }
     
@@ -47,6 +57,9 @@ public class TJPtCurve {
             c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
         
         BasicStroke bs = (BasicStroke) s;
+        this.strokeWidth = bs.getLineWidth();
+        this.strokeEndCap = bs.getEndCap();
+        this.strokeLineJoin = bs.getLineJoin();
         this.mStroke = new BasicStroke(
             bs.getLineWidth(), bs.getEndCap(), bs.getLineJoin());
     }
