@@ -1,30 +1,18 @@
 package tj.scenario;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJPage;
 import tj.TJScene;
-import tj.cmd.TJCmdToCreateCurPtCurve;
 import utils.TJNavPanel;
 import x.XApp;
-import x.XCmdToChangeScene;
 import x.XScenario;
 
 public class TJDefaultScenario extends XScenario {

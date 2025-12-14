@@ -26,8 +26,8 @@ import tj.TJCanvas2D;
 import tj.TJJournalBook;
 import tj.TJJournalBookMgr;
 import tj.TJMapPinPoint;
-import tj.TJPageMgr;
 import tj.TJScene;
+import utils.CircleButton;
 import utils.TJNavPanel; // Assuming TJNavPanel exists for navigation setup
 import x.XApp;
 import x.XCmdToChangeScene;
@@ -39,6 +39,8 @@ public class TJMapScenario extends XScenario {
     private static final double PINPOINT_TOLERANCE = 10.0; // Max click distance for pinpoint selection
 
     // fields
+    private Image mLoadIcon = null;
+    private Image mSaveIcon = null;
     private Image mWorldMap = null;
     private Image mScaledMap = null;
     private int mScaledMapHeight = 0;
@@ -60,14 +62,16 @@ public class TJMapScenario extends XScenario {
     }
     private TJMapScenario(XApp app) {
         super(app);
-        loadMap();
+        loadImages();
     }
     
-    private void loadMap() {
+    private void loadImages() {
         try {
+            this.mLoadIcon = ImageIO.read(getClass().getResourceAsStream("/assets/load.png"));
+            this.mSaveIcon = ImageIO.read(getClass().getResourceAsStream("/assets/save.png"));
             this.mWorldMap = ImageIO.read(getClass().getResourceAsStream(MAP_ASSET_PATH));
         } catch (IOException | IllegalArgumentException e) {
-            System.err.println("ERROR: Failed to load world map asset: " + e.getMessage());
+            System.err.println("ERROR: Failed to load images in TJMapScenario: " + e.getMessage());
         }
     }
     
@@ -119,20 +123,6 @@ public class TJMapScenario extends XScenario {
             
             // draw all existing pins
             for (TJMapPinPoint pin : mPinPoints) {
-                // PinPoint is currently stored in a coordinate system (Map coordinates, e.g., 0 to 1000)
-                // We need to transform it to Screen Coordinates (pixels) here.
-                // Assuming pin.getMapPoint() returns normalized coordinates (0 to 1) for simplicity:
-                
-                // Example conversion (if pin.getMapPoint() holds normalized X, Y):
-                // double screenX = pin.getMapPoint().getX() * mScaledMapWidth;
-                // double screenY = pin.getMapPoint().getY() * mScaledMapHeight + startY;
-                
-                // For now, let's assume pin.getMapPoint() holds the coordinates we use for display
-                // and TJMapPinPoint.draw() knows how to draw itself at that screen location.
-                
-                // ** CRITICAL TODO: Implement proper MapPoint -> ScreenPoint scaling and transformation **
-                // For demonstration, let's just use the stored point (mMapPoint) assuming it represents Screen/Map coordinates after scaling.
-                
                 pin.draw(g2);
             }
         }
@@ -142,6 +132,8 @@ public class TJMapScenario extends XScenario {
         // UI components
         private JPanel mTopNavPanel;
         private JPanel mBottomNavPanel;
+        private JButton mLoadBtn;
+        private JButton mSaveBtn;
         
         private static MapReadyScene mSingleton = null;
         public static MapReadyScene getSingleton() { return mSingleton; }
@@ -157,15 +149,62 @@ public class TJMapScenario extends XScenario {
         
         private void initializeBottomNav() {
             TJ tj = (TJ)this.mScenario.getApp();
+            TJMapScenario scenario = (TJMapScenario)this.mScenario;
             int appHeight = tj.getCanvas2D().getHeight();
             if (appHeight == 0) appHeight = 800;
             int bottomHeight = (int)(appHeight * TJCanvas2D.BOTTOM_NAV_RATIO);
+            
+            int appWidth = tj.getCanvas2D().getWidth();
+            int diameter = (int)(appWidth * TJHomeScenario.BUTTON_DIAMETER_RATIO);
+            if (diameter < 40) diameter = 40;
+            
+            mLoadBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                scenario.mLoadIcon, diameter);
+            mSaveBtn = new CircleButton(TJHomeScenario.ACTIVE_BUTTON_COLOR, 
+                scenario.mSaveIcon, diameter);
+            
+            mLoadBtn.setToolTipText("Load Journal");
+            mSaveBtn.setToolTipText("Save Journal");
             
             // create panel and add buttons
             mBottomNavPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 10));
             mBottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
             mBottomNavPanel.setBackground(TJCanvas2D.COLOR_PANEL_BACKGROUND_LIGHT);
             mBottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
+            
+            mBottomNavPanel.add(mLoadBtn);
+            mBottomNavPanel.add(mSaveBtn);
+            
+            // connect actions
+            mLoadBtn.addActionListener(e -> {
+                try {
+                    boolean loaded = tj.getJournalBookMgr().loadJournal(); 
+
+                    if (loaded) {
+                        scenario.syncPinPoints();
+
+                        tj.getCanvas2D().repaint(); 
+                        JOptionPane.showMessageDialog(tj.getCanvas2D(),
+                            "All journals loaded.", "Load Complete",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                         JOptionPane.showMessageDialog(tj.getCanvas2D(),
+                            "No journal data found.", "Load Failure",
+                            JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(tj.getCanvas2D(),
+                        "An error occurred during loading.", "Load Error",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            });
+            mSaveBtn.addActionListener(e -> {
+                tj.getJournalBookMgr().saveJournal();
+                JOptionPane.showMessageDialog(tj.getCanvas2D(),
+                    "All journals saved.", "Save Complete",
+                    JOptionPane.INFORMATION_MESSAGE);
+            });
         }
 
         @Override

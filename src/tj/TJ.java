@@ -50,11 +50,6 @@ public class TJ extends XApp {
         return this.mJournalBookMgr;
     }
     
-    private TJPageMgr mPageMgr = null;
-    public TJPageMgr getPageMgr() {
-        return this.mPageMgr;
-    }
-    
     private TJPenMarkMgr mPenMarkMgr = null;
     public TJPenMarkMgr getPenMarkMgr() {
         return this.mPenMarkMgr;
@@ -88,19 +83,11 @@ public class TJ extends XApp {
         this.mColorChooser = new TJColorChooser();
         this.mEventListener = new TJEventListener(this);
         this.mJournalBookMgr = new TJJournalBookMgr(this);
-        this.mPageMgr = new TJPageMgr(this);
         this.mPenMarkMgr = new TJPenMarkMgr();
         this.mPtCurveMgr = new TJPtCurveMgr();
         this.mScenarioMgr = new TJScenarioMgr(this);
         this.mLogMgr = new XLogMgr();
         this.mLogMgr.setPrintOn(true);
-        
-        // load or initialize journal data
-//        boolean loadSuccess = this.mPageMgr.loadJournal();
-//        if (!loadSuccess || this.mPageMgr.getJournalPages().isEmpty()) {
-//            // Start with a blank spread if loading failed or file was empty
-//            this.mPageMgr.addEmptyPage(); 
-//        }
         
         // connect event listeners
         this.mCanvas2D.addMouseListener(this.mEventListener);
