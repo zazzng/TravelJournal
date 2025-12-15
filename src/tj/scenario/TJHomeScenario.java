@@ -1,6 +1,5 @@
 package tj.scenario;
 
-import utils.CircleButton;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;

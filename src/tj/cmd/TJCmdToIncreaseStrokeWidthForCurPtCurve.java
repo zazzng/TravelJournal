@@ -29,7 +29,7 @@ public class TJCmdToIncreaseStrokeWidthForCurPtCurve extends XLoggableCmd{
         BasicStroke bs =
             (BasicStroke)tj.getCanvas2D().getCurStrokeForPtCurve();
         this.mWBefore= bs.getLineWidth();
-        tj.getCanvas2D().increaseStrokeWidthForCurPtCurve(this.mWDelta);
+        // tj.getCanvas2D().increaseStrokeWidthForCurPtCurve(this.mWDelta);
         bs = (BasicStroke)tj.getCanvas2D().getCurStrokeForPtCurve();
         this.mWAfter = bs.getLineWidth();
         return true;

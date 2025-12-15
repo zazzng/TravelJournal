@@ -10,15 +10,12 @@ import java.awt.Stroke;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -728,8 +725,8 @@ public class TJImageScenario extends XScenario {
             
         // draw content
         if (curPage!= null) {
-            canvas.drawImages(g2, curPage[0].getImages());
-            canvas.drawImages(g2, curPage[1].getImages());
+             canvas.drawImages(g2, curPage[0].getImages());
+             canvas.drawImages(g2, curPage[1].getImages());
 
             canvas.drawPtCurves(g2, curPage[0].getPtCurves());
             canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
