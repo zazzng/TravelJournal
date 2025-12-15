@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 import tj.TJ;
 import tj.TJPenMark;
 import tj.TJScene;
-import tj.Command.TJCmdToDeselectSelectedPtCurves;
+import tj.cmd.TJCmdToDeselectSelectedPtCurves;
 import x.XApp;
 import x.XCmdToChangeScene;
 import x.XScenario;
@@ -95,6 +95,10 @@ public class TJGestureScenario extends XScenario {
 
         @Override
         public void wrapUp() {
+        }
+        @Override
+        public void drawBackground(Graphics2D g2) {
+            // Background for gesture drawing
         }
     }
     

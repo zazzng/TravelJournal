@@ -27,9 +27,13 @@ public class TJCmdToUpdateSelectionBox extends XLoggableCmd {
 
     @Override
     protected boolean defineCmd() {
-	TJSelectScenario scenario = TJSelectScenario.getSingle();
-        scenario.getSelectionBox().update(this.mScreenPt);
-        this.mSelectionBox = scenario.getSelectionBox();
+        TJSelectScenario scenario = TJSelectScenario.getSingle();
+        TJSelectionBox selectionBox = scenario.getSelectionBox();
+        if (selectionBox != null) {
+            selectionBox.update(this.mScreenPt);
+            this.mSelectionBox = selectionBox;
+            System.out.println("[UPDATE SELECTION BOX] Updated to " + this.mScreenPt);
+        }
         return true;
     }
     

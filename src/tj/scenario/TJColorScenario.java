@@ -8,7 +8,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import tj.Command.TJCmdToDeselectSelectedPtCurves;
+import tj.cmd.TJCmdToDeselectSelectedPtCurves;
 import tj.TJ;
 import tj.TJCanvas2D;
 import tj.TJScene;
@@ -103,7 +103,7 @@ public class TJColorScenario extends XScenario {
             }
             
             XCmdToChangeScene.execute(tj,
-                TJDrawScenario.DrawReadyScene.getSingleton(), null);
+                this.mReturnScene, null);
         }
 
         @Override

@@ -27,6 +27,11 @@ public class TJJournalBook implements Serializable {
     public ArrayList<TJPage[]> getPages() {
         return this.mPages;
     }
+    
+    private TJEmojiPage mEmojiPage;
+    public TJEmojiPage getEmojiPage() {
+        return this.mEmojiPage;
+    }
 
     public TJJournalBook(String title, Point2D.Double pinPoint) {
         this.mTitle = title;
@@ -36,6 +41,9 @@ public class TJJournalBook implements Serializable {
         TJPage leftPage = new TJPage();
         TJPage rightPage = new TJPage();
         this.mPages.add(new TJPage[] {leftPage, rightPage});
+        
+        // Initialize emoji page separately
+        this.mEmojiPage = new TJEmojiPage();
     }
     
     public String getFileName() {

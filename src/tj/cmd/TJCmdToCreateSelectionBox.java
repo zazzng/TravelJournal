@@ -29,6 +29,7 @@ public class TJCmdToCreateSelectionBox extends XLoggableCmd {
         Point pt = this.mScreenPt;
         TJSelectionBox selectionBox = new TJSelectionBox(pt);
         TJSelectScenario.getSingle().setSelectionBox(selectionBox);
+        System.out.println("[CREATE SELECTION BOX] Created at " + pt);
         return true;
     }
 

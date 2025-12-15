@@ -2,6 +2,7 @@ package tj;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -42,6 +43,12 @@ public class TJCanvas2D extends JPanel {
     public static final float STROKE_WIDTH_INCREMENT = 1f;
     public static final float STROKE_MIN_WIDTH = 1f;
 
+
+    private static final Color COLOR_INFO = new Color(255, 0, 0, 128);
+    private static final Font FONT_INFO = new Font("Monospaced", Font.PLAIN, 24);
+    private static final float INFO_TOP_ALIGNMENT_X = 20;
+    private static final float INFO_TOP_ALIGNMENT_Y = 30;
+
     // fields
     private TJ mTJ = null;
     private Color mCurColorForPtCurve = null;
@@ -62,6 +69,8 @@ public class TJCanvas2D extends JPanel {
         this.mTJ = tj;
         this.mCurColorForPtCurve = TJCanvas2D.COLOR_PT_CURVE_DEFAULT;
         this.mCurStrokeForPtCurve = TJCanvas2D.STROKE_PT_CURVE_DEFAULT;
+        setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
     }
 
     @Override
@@ -87,6 +96,7 @@ public class TJCanvas2D extends JPanel {
         
         // current scene's screen obkects
         curScene.renderScreenObjects(g2);
+        this.drawInfo(g2);
         
     }
     
@@ -213,5 +223,16 @@ public class TJCanvas2D extends JPanel {
         
         this.mCurStrokeForPtCurve = new BasicStroke(w, bs.getEndCap(),
             bs.getLineJoin());
+    }
+
+    private void drawInfo(Graphics2D g2) {
+        // display the current mode
+//        String str = String.valueOf(this.mTJ.getMode());
+        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
+        String str = curScene.getClass().getSimpleName();
+        g2.setColor(TJCanvas2D.COLOR_INFO);
+        g2.setFont(TJCanvas2D.FONT_INFO);
+        g2.drawString(str, TJCanvas2D.INFO_TOP_ALIGNMENT_X, 
+            TJCanvas2D.INFO_TOP_ALIGNMENT_Y);
     }
 }

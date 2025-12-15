@@ -114,6 +114,9 @@ public class TJDrawScenario extends XScenario {
             TJ tj = (TJ)this.mScenario.getApp();
             TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
             Point pt = e.getPoint();
+
+            TJPage[] curPage = tj.getJournalBookMgr().getCurPage();
+            if (curPage == null) return;
             
             Rectangle leftBounds = scenario.getLeftPageBounds();
             Rectangle rightBounds = scenario.getRightPageBounds();
@@ -147,6 +150,12 @@ public class TJDrawScenario extends XScenario {
             int code = e.getKeyCode();
             
             switch (code) {
+                case KeyEvent.VK_SHIFT:
+                    System.out.println("shift key pressed - entering selection mode");
+                    XCmdToChangeScene.execute(tj,
+                        TJSelectScenario.SelectReadyScene.getSingleton(),
+                        this);
+                    break;
                 case KeyEvent.VK_UP:
                     System.out.println("add stroke width pls");
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
@@ -290,8 +299,8 @@ public class TJDrawScenario extends XScenario {
             TJ tj = (TJ) this.mScenario.getApp();
             TJDrawScenario scenario = (TJDrawScenario)this.mScenario;
             
-            if (scenario.mTargetPage != null) {
-                TJCmdToAddCurPtCurveToPtCurves.execute(tj, scenario.mTargetPage);
+            if (tj.getPtCurveMgr().getCurPtCurve() != null) {
+                TJCmdToAddCurPtCurveToPtCurves.execute(tj);
             }
             
             scenario.mTargetPage = null;

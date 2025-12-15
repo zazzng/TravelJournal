@@ -54,4 +54,10 @@ public class TJPage implements Serializable {
     public void addImage(TJImage img) {
         this.mImages.add(img);
     }
+
+    public void addPtCurve(TJPtCurve curve) {
+    if (curve == null) return;
+    this.mPtCurves.add(curve);
+}
+
 }

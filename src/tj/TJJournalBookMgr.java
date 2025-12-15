@@ -198,6 +198,21 @@ public class TJJournalBookMgr implements Serializable {
             this.mTJ.getCanvas2D().repaint();
         }
     }
+
+    public TJPage getSingleCurPage() {
+        ArrayList<TJPage[]> pages = getCurBookPages();
+        if (pages.isEmpty() || this.mCurPageIndex < 0 ||
+            this.mCurPageIndex >= pages.size()) {
+            return null;
+        }
+
+        TJPage[] spread = pages.get(this.mCurPageIndex);
+            if (spread == null || spread.length == 0) {
+                return null;
+            }
+
+        return spread[0];
+    }
     
     public TJPage[] getCurPage() {
         ArrayList<TJPage[]> pages = getCurBookPages();
@@ -206,6 +221,15 @@ public class TJJournalBookMgr implements Serializable {
             return null;
         }
         return pages.get(this.mCurPageIndex);
+    }
+    
+    public TJEmojiPage[] getCurEmojiPageArray() {
+        TJEmojiPage emojiPage = getCurEmojiPage();
+        if (emojiPage == null) {
+            return null;
+        }
+        // Return as array for consistency with page spreads
+        return new TJEmojiPage[] { emojiPage, emojiPage };
     }
     
     public TJPage[] getPrevPage() {
@@ -222,6 +246,14 @@ public class TJJournalBookMgr implements Serializable {
             return pages.get(this.mCurPageIndex + 1);
         }
         return new TJPage[] { TJPage.BLANK_HIDDEN_PAGE, TJPage.BLANK_HIDDEN_PAGE };
+    }
+    
+    public TJEmojiPage getCurEmojiPage() {
+        TJJournalBook book = getCurBook();
+        if (book == null) {
+            return TJEmojiPage.BLANK_HIDDEN_PAGE;
+        }
+        return book.getEmojiPage();
     }
 
     public void addEmptyPage() {

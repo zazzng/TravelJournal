@@ -19,7 +19,6 @@ public class TJCmdToDestroySelectionBox extends XLoggableCmd {
     @Override
     protected boolean defineCmd() {
         TJ tj = (TJ)this.mApp;
-        TJSelectScenario.getSingle().setSelectionBox(null);
         return true;
     }
 

@@ -9,17 +9,15 @@ import x.XLoggableCmd;
 public class TJCmdToAddCurPtCurveToPtCurves extends XLoggableCmd {
     // fields
     private TJPtCurve mCurPtCurve = null;
-    private TJPage mPage = null;
     
     // private constructor
-    private TJCmdToAddCurPtCurveToPtCurves(XApp app, TJPage page) {
+    private TJCmdToAddCurPtCurveToPtCurves(XApp app) {
         super(app);
-        this.mPage = page;
     }
 
-    public static boolean execute(XApp app, TJPage page) {
+    public static boolean execute(XApp app) {
         TJCmdToAddCurPtCurveToPtCurves cmd =
-            new TJCmdToAddCurPtCurveToPtCurves(app, page);
+            new TJCmdToAddCurPtCurveToPtCurves(app);
         return cmd.execute();
     }
 
@@ -27,15 +25,35 @@ public class TJCmdToAddCurPtCurveToPtCurves extends XLoggableCmd {
     protected boolean defineCmd() {
         TJ tj = (TJ)this.mApp;
         this.mCurPtCurve = tj.getPtCurveMgr().getCurPtCurve();
-        
-        if (this.mCurPtCurve.getPts().size() >= 2) {
-            this.mPage.getPtCurves().add(this.mCurPtCurve);
+
+        // Add ONLY to regular journal pages, never to emoji pages
+        TJPage[] curPageSpread = tj.getJournalBookMgr().getCurPage();
+        TJPage page = null;
+        if (curPageSpread != null && curPageSpread.length >= 2) {
+            page = curPageSpread[1];  // Right page for journal drawing
         }
         
+        if (page != null && this.mCurPtCurve != null &&
+            this.mCurPtCurve.getPts().size() >= 2) {
+
+            System.out.println(
+                "[DRAW-CURVE] Adding curve to JOURNAL page. Curves BEFORE: " +
+                page.getPtCurves().size()
+            );
+
+            page.addPtCurve(this.mCurPtCurve);
+
+            System.out.println(
+                "[DRAW-CURVE] Curve added. Curves AFTER: " +
+                page.getPtCurves().size()
+            );
+        }
+
         tj.getPtCurveMgr().setCurPtCurve(null);
-        
+
         return true;
     }
+
 
     @Override
     protected String createLog() {
