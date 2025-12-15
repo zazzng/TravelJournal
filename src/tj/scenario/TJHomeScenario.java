@@ -10,10 +10,12 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -433,15 +435,38 @@ public class TJHomeScenario extends XScenario {
         
         g2.transform(at);
         
-        canvas.drawImages(g2, curPage[0].getImages());
-        canvas.drawImages(g2, curPage[1].getImages());
+        RoundRectangle2D.Double leftClipShape = 
+        new java.awt.geom.RoundRectangle2D.Double(
+            drawModeX, 
+            drawModeY, 
+            drawModeW, 
+            drawModeH, 
+            TJHomeScenario.PAGE_CORNER_ARC, 
+            TJHomeScenario.PAGE_CORNER_ARC
+        );
+        Shape oldClip = g2.getClip();
+        g2.setClip(leftClipShape);
         
+        canvas.drawImages(g2, curPage[0].getImages());
         canvas.drawPtCurves(g2, curPage[0].getPtCurves());
         canvas.drawSelectedPtCurves(g2, curPage[0].getSelectedPtCurves());
-
+        
+        RoundRectangle2D.Double rightClipShape = 
+        new java.awt.geom.RoundRectangle2D.Double(
+            drawModeX + drawModeW, 
+            drawModeY, 
+            drawModeW, 
+            drawModeH, 
+            TJHomeScenario.PAGE_CORNER_ARC, 
+            TJHomeScenario.PAGE_CORNER_ARC
+        );
+        g2.setClip(rightClipShape);
+        
+        canvas.drawImages(g2, curPage[1].getImages());
         canvas.drawPtCurves(g2, curPage[1].getPtCurves());
         canvas.drawSelectedPtCurves(g2, curPage[1].getSelectedPtCurves());
         
+        g2.setClip(oldClip);
         g2.setTransform(oldAT);
     }
     

@@ -45,6 +45,7 @@ public class TJMapScenario extends XScenario {
     private Image mScaledMap = null;
     private int mScaledMapHeight = 0;
     private int mScaledMapWidth = 0;
+    private Rectangle mMapBound = new Rectangle();
     
     private Point2D.Double mNewPinPoint = null;
     private ArrayList<TJMapPinPoint> mPinPoints = new ArrayList<>(); 
@@ -93,8 +94,15 @@ public class TJMapScenario extends XScenario {
             double scale = (double)appWidth / originalWidth;
             this.mScaledMapWidth = appWidth;
             this.mScaledMapHeight = (int)(originalHeight * scale);
-            this.mScaledMap = this.mWorldMap.getScaledInstance(mScaledMapWidth, mScaledMapHeight, Image.SCALE_SMOOTH);
+            this.mScaledMap = this.mWorldMap.getScaledInstance(mScaledMapWidth,
+                mScaledMapHeight, Image.SCALE_SMOOTH);
         }
+        
+        int startY = (canvas.getHeight() - mScaledMapHeight) / 2;
+        int startX = 0; 
+
+        this.mMapBound.setBounds(startX, startY, mScaledMapWidth,
+            mScaledMapHeight);
     }
     
     public void syncPinPoints() {
@@ -123,7 +131,7 @@ public class TJMapScenario extends XScenario {
             
             // draw all existing pins
             for (TJMapPinPoint pin : mPinPoints) {
-                pin.draw(g2);
+                pin.draw(g2, this.mMapBound);
             }
         }
     }
@@ -214,9 +222,12 @@ public class TJMapScenario extends XScenario {
             TJJournalBookMgr bookMgr = tj.getJournalBookMgr();
             Point pt = e.getPoint();
             
+            scenario.updateMapScale(tj.getCanvas2D()); 
+            Rectangle mapBound = scenario.mMapBound;
+            
             // check for existing pinpoint
             for (TJMapPinPoint pin : scenario.mPinPoints) {
-                if (pin.contains(pt)) {
+                if (pin.contains(pt, scenario.mMapBound)) {
                     String selectedTitle = pin.getBookTitle();
                     int indexToSelect = -1;
 
@@ -239,7 +250,14 @@ public class TJMapScenario extends XScenario {
             }
             
             // 2. Click on empty space (Add Journal)
-            scenario.mNewPinPoint = new Point2D.Double(pt.getX(), pt.getY());
+            double normX = (pt.getX() - mapBound.x) / (double)mapBound.width;
+            double normY = (pt.getY() - mapBound.y) / (double)mapBound.height;
+            
+            normX = Math.max(0.0, Math.min(1.0, normX));
+            normY = Math.max(0.0, Math.min(1.0, normY));
+            
+            scenario.mNewPinPoint = new Point2D.Double(normX, normY);
+            
             XCmdToChangeScene.execute(tj,
                 TJMapScenario.MapAddJournalScene.getSingleton(), this);
         }
@@ -370,7 +388,7 @@ public class TJMapScenario extends XScenario {
             // draw the pinpoint
             if (scenario.mNewPinPoint != null) {
                 TJMapPinPoint tempPin = new TJMapPinPoint(scenario.mNewPinPoint, "");
-                tempPin.draw(g2);
+                tempPin.draw(g2, scenario.mMapBound);
             }
         }
         

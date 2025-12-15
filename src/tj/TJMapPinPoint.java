@@ -29,26 +29,25 @@ public class TJMapPinPoint implements Serializable {
         return this.mBookTitle;
     }
     
-    public boolean contains(Point screenPoint) {
+    public boolean contains(Point screenPoint, Rectangle mapBound) {
+        int x = (int)(mapBound.x + mMapPoint.x * mapBound.width);
+        int y = (int)(mapBound.y + mMapPoint.y * mapBound.height);
+        
         Rectangle bounds = new Rectangle(
-            (int)(mMapPoint.x - PIN_SIZE / 2), 
-            (int)(mMapPoint.y - PIN_SIZE / 2), 
+            x - PIN_SIZE / 2, 
+            y - PIN_SIZE / 2, 
             PIN_SIZE, 
             PIN_SIZE
         );
         return bounds.contains(screenPoint);
     }
 
-    public void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, Rectangle mapBound) {
         g2.setFont(new Font("SansSerif", Font.PLAIN, PIN_SIZE));
-        g2.setColor(Color.RED);
-        
-        int x = (int)mMapPoint.x;
-        int y = (int)mMapPoint.y;
-        
-        g2.drawString(PIN_SYMBOL, x - PIN_SIZE / 2, y + PIN_SIZE / 4);
 
-        // optional: draw bounding box for debugging
-        // g2.drawRect(x - PIN_SIZE / 2, y - PIN_SIZE / 2, PIN_SIZE, PIN_SIZE);
+        int x = (int)(mapBound.x + mMapPoint.x * mapBound.width);
+        int y = (int)(mapBound.y + mMapPoint.y * mapBound.height);
+
+        g2.drawString(PIN_SYMBOL, x - PIN_SIZE / 2, y + PIN_SIZE / 4);
     }
 }
