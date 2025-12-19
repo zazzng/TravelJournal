@@ -97,8 +97,8 @@ public class TJ extends XApp {
         
         // build and show visual components
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        double widthRatio = 0.75;
-        double heightRatio = 0.75;
+        double widthRatio = 1.0;
+        double heightRatio = 1.0;
         int appWidth = (int)(screenSize.width * widthRatio);
         int appHeight = (int)(screenSize.height * heightRatio);
         

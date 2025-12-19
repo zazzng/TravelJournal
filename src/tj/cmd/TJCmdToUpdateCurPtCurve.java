@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
 import tj.TJ;
 import tj.TJPtCurve;
 import tj.scenario.TJDrawScenario;
+import tj.scenario.TJImageScenario;
 import x.XApp;
 import x.XLoggableCmd;
 
@@ -14,23 +15,25 @@ public class TJCmdToUpdateCurPtCurve extends XLoggableCmd {
     private Point mScreenPt = null;
     private Point2D.Double mWorldPt = null;
     private TJPtCurve mCurPtCurve = null;
+    private String mPrevScenario = "";
     
     // private constructor
-    private TJCmdToUpdateCurPtCurve(XApp app, Point pt) {
+    private TJCmdToUpdateCurPtCurve(XApp app, Point pt, String scenario) {
         super(app);
         this.mScreenPt = pt;
+        this.mPrevScenario = scenario;
     }
 
     // TJCmdToDeleteSelectedPtCurves.execute(app);
-    public static boolean execute(XApp app, Point pt) {
-        TJCmdToUpdateCurPtCurve cmd = new TJCmdToUpdateCurPtCurve(app, pt);
+    public static boolean execute(XApp app, Point pt, String scenario) {
+        TJCmdToUpdateCurPtCurve cmd = new TJCmdToUpdateCurPtCurve(app, pt,
+            scenario);
         return cmd.execute();
     }
 
     @Override
     protected boolean defineCmd() {
         TJ tj = (TJ)this.mApp;
-        TJDrawScenario scenario = TJDrawScenario.getSingle();
         
         this.mCurPtCurve = tj.getPtCurveMgr().getCurPtCurve();
         
@@ -38,8 +41,12 @@ public class TJCmdToUpdateCurPtCurve extends XLoggableCmd {
             return false;
         }
         
-        Rectangle targetBounds = scenario.getTargetBounds(); 
-        if (targetBounds == null) return false;
+        Rectangle targetBounds = null;
+        if (this.mPrevScenario.equals("Draw")) {
+            targetBounds = TJDrawScenario.getSingle().getTargetBounds();
+        } else if (this.mPrevScenario.equals("Image")) {
+            targetBounds = TJImageScenario.getSingle().getTargetBounds();
+        }
         
         if (!targetBounds.contains(this.mScreenPt)) {
             // clip the screen point to the boundary of the target page

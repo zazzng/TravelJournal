@@ -142,13 +142,11 @@ public class TJDrawScenario extends XScenario {
 
         @Override
         public void handleKeyDown(KeyEvent e) {
-            System.out.println("a key is pressed");
             TJ tj = (TJ)this.mScenario.getApp();
             int code = e.getKeyCode();
             
             switch (code) {
                 case KeyEvent.VK_UP:
-                    System.out.println("add stroke width pls");
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
                         TJCanvas2D.STROKE_WIDTH_INCREMENT);
                     break;
@@ -156,6 +154,9 @@ public class TJDrawScenario extends XScenario {
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
                         -TJCanvas2D.STROKE_WIDTH_INCREMENT);
                     break;
+                case KeyEvent.VK_I:
+                    XCmdToChangeScene.execute(tj,
+                         TJImageScenario.ImageReadyScene.getSingleton(), this);
             }
         }
         
@@ -175,6 +176,23 @@ public class TJDrawScenario extends XScenario {
             
             g2.setColor(TJCanvas2D.COLOR_BACKGROUND_DARK); 
             g2.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            
+            int w = canvas.getWidth();
+            int h = canvas.getHeight();
+            int gridSize = 15; // Adjust for grid density
+
+            g2.setColor(new Color(60, 60, 60)); // Slightly lighter than the dark background
+            g2.setStroke(new BasicStroke(1f));
+
+            // Draw vertical lines
+            for (int x = 0; x < w; x += gridSize) {
+                g2.drawLine(x, 0, x, h);
+            }
+
+            // Draw horizontal lines
+            for (int y = 0; y < h; y += gridSize) {
+                g2.drawLine(0, y, w, y);
+            }
         }
         
         @Override
@@ -280,7 +298,7 @@ public class TJDrawScenario extends XScenario {
                 Rectangle totalBounds = new Rectangle(leftBounds.x, leftBounds.y, leftBounds.width + rightBounds.width, leftBounds.height);
                 
                 if (totalBounds.contains(e.getPoint())) {
-                    TJCmdToUpdateCurPtCurve.execute(tj, e.getPoint());
+                    TJCmdToUpdateCurPtCurve.execute(tj, e.getPoint(), "Draw");
                 }
             }
         }
