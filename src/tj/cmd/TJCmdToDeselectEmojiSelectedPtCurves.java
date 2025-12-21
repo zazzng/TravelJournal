@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import tj.TJ;
 import tj.TJEmojiPage;
 import tj.TJPtCurve;
+import tj.TJImage;
 import tj.scenario.TJEmojiScenario;
 import x.XApp;
 import x.XCmdToChangeScene;
@@ -41,6 +42,16 @@ public class TJCmdToDeselectEmojiSelectedPtCurves extends XLoggableCmd {
             
             // Clear selected curves from emoji page
             targetEmojiPage.getSelectedPtCurves().clear();
+
+            // Also clear selected decorations and restore alpha
+            if (targetEmojiPage.getSelectedDecorations() != null) {
+                for (TJImage img : targetEmojiPage.getSelectedDecorations()) {
+                    img.setAlpha(1.0f);
+                }
+                targetEmojiPage.getSelectedDecorations().clear();
+            }
+            // Clear single-selection state in scenario
+            emojiScenario.setSelectedDecoration(null);
         } else {
             this.mSelectedPtCurves = new ArrayList<>();
             this.mNumOfDeselectedPtCurves = 0;

@@ -165,6 +165,13 @@ public class TJDrawScenario extends XScenario {
                     TJCmdToIncreaseStrokeWidthForCurPtCurve.execute(tj,
                         -TJCanvas2D.STROKE_WIDTH_INCREMENT);
                     break;
+                case KeyEvent.VK_I:
+                    XCmdToChangeScene.execute(tj,
+                         TJImageScenario.ImageReadyScene.getSingleton(), this);
+                case KeyEvent.VK_C:
+                    XCmdToChangeScene.execute(tj,
+                         TJColorScenario.ColorChangeScene.getSingleton(), this);
+                    break;
             }
         }
         

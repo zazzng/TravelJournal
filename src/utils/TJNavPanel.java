@@ -16,9 +16,7 @@ import tj.scenario.TJDrawScenario;
 import tj.scenario.TJEmojiScenario;
 import tj.scenario.TJEmojiSelectScenario;
 import tj.scenario.TJHomeScenario;
-import tj.scenario.TJImageScenario;
-import tj.TJScene; // Import TJScene to handle the return scene correctly
-import tj.scenario.TJColorScenario;
+import tj.TJScene;
 import x.XCmdToChangeScene;
 
 public class TJNavPanel {
@@ -71,34 +69,9 @@ public class TJNavPanel {
         bottomNavPanel.setPreferredSize(new Dimension(0, bottomHeight));
         bottomNavPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         
-        JButton penBtn = new JButton("Pen");
-        JButton colorBtn = new JButton("Color");
-        JButton faceColorBtn = new JButton("Face Color");
-        JButton imageBtn = new JButton("Add Image");
+        // JButton penBtn = new JButton("Pen");
+        // JButton faceColorBtn = new JButton("Face Color");
         JButton emojiBtn = new JButton("Emoji");
-        JButton exportBtn = new JButton("Export");
-
-        // Don't add image button in emoji scenario
-        if (!(returnScene instanceof TJEmojiScenario.EmojiDrawScene) && 
-            !(returnScene instanceof TJEmojiScenario.EmojiDrawingScene) &&
-            !(returnScene instanceof TJEmojiSelectScenario.EmojiSelectReadyScene) &&
-            !(returnScene instanceof TJEmojiSelectScenario.EmojiSelectScene) &&
-            !(returnScene instanceof TJEmojiSelectScenario.EmojiSelectedReadyScene)) {
-            bottomNavPanel.add(imageBtn);
-        }
-        
-        // Add face color and export buttons in all emoji scenarios (drawing and selection)
-        if (returnScene instanceof TJEmojiScenario.EmojiDrawScene || 
-            returnScene instanceof TJEmojiScenario.EmojiDrawingScene ||
-            returnScene instanceof TJEmojiSelectScenario.EmojiSelectReadyScene ||
-            returnScene instanceof TJEmojiSelectScenario.EmojiSelectScene ||
-            returnScene instanceof TJEmojiSelectScenario.EmojiSelectedReadyScene) {
-            bottomNavPanel.add(faceColorBtn);
-            bottomNavPanel.add(exportBtn);
-        }
-
-        bottomNavPanel.add(penBtn);
-        bottomNavPanel.add(colorBtn);
         
         // Add emoji button only when NOT in emoji scenario, otherwise it becomes "Back to Draw"
         if (!(returnScene instanceof TJEmojiScenario.EmojiDrawScene) && 
@@ -108,34 +81,6 @@ public class TJNavPanel {
             // In emoji scenario, show "Back to Draw" button
             bottomNavPanel.add(emojiBtn);
         }
-        
-        penBtn.addActionListener(e -> {
-            // If currently in emoji scenario, go to EmojiDrawingScene
-            if (returnScene instanceof TJEmojiScenario.EmojiDrawScene) {
-                // Set the emoji page as target for drawing
-                TJEmojiScenario scenario = TJEmojiScenario.getSingle();
-                scenario.setTargetEmojiPage(tj.getJournalBookMgr().getCurEmojiPage());
-                XCmdToChangeScene.execute(tj, 
-                    TJEmojiScenario.EmojiDrawingScene.getSingleton(), 
-                    returnScene);
-            } else {
-                // Otherwise go to draw scenario
-                XCmdToChangeScene.execute(tj, 
-                    TJDrawScenario.DrawReadyScene.getSingleton(), 
-                    returnScene);
-            }
-        });
-
-        colorBtn.addActionListener(e -> {
-             XCmdToChangeScene.execute(tj,
-                TJColorScenario.ColorChangeScene.getSingleton(), returnScene);
-        });
-
-        imageBtn.addActionListener(e -> {
-            XCmdToChangeScene.execute(tj, 
-                TJImageScenario.ImageReadyScene.getSingleton(), 
-                returnScene);
-        });
         
         // Replace emoji button with back-to-draw button when in emoji scenario (drawing or selection)
         if (returnScene instanceof TJEmojiScenario.EmojiDrawScene || 
@@ -151,30 +96,7 @@ public class TJNavPanel {
             emojiBtn.addActionListener(e -> {
                 XCmdToChangeScene.execute(tj, TJEmojiScenario.EmojiDrawScene.getSingleton(), returnScene);
             });
-        }
-        
-        faceColorBtn.addActionListener(e -> {
-            // Open face color picker for emoji circle
-            if (returnScene instanceof TJEmojiScenario.EmojiDrawScene ||
-                returnScene instanceof TJEmojiScenario.EmojiDrawingScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectReadyScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectedReadyScene) {
-                TJEmojiScenario.openFaceColorPicker(tj, returnScene);
-            }
-        });
-        
-        exportBtn.addActionListener(e -> {
-            // Export emoji circle drawing
-            if (returnScene instanceof TJEmojiScenario.EmojiDrawScene ||
-                returnScene instanceof TJEmojiScenario.EmojiDrawingScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectReadyScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectScene ||
-                returnScene instanceof TJEmojiSelectScenario.EmojiSelectedReadyScene) {
-                TJEmojiScenario.exportEmojiCircleDrawing(tj);
-            }
-        });
-
+        }    
         return bottomNavPanel;
     }
     

@@ -1,10 +1,10 @@
 package tj;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.AlphaComposite;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
@@ -38,6 +38,8 @@ public class TJImage implements Serializable {
     // image data
     private transient BufferedImage mImage;
     private byte[] mImageData;
+    // render properties
+    private float mAlpha = 1.0f; // 0.0f (transparent) to 1.0f (opaque)
     
     public TJImage(BufferedImage img, int centerX, int centerY, double scale) {
         this.mImage = img;
@@ -93,6 +95,7 @@ public class TJImage implements Serializable {
         if (mImage == null) return;
 
         AffineTransform saveAT = g2.getTransform();
+        java.awt.Composite saveComposite = g2.getComposite();
         
         g2.translate(mX, mY);
         g2.rotate(mRotation);
@@ -100,6 +103,9 @@ public class TJImage implements Serializable {
         
         int w = mImage.getWidth();
         int h = mImage.getHeight();
+        // apply alpha
+        float a = Math.max(0.0f, Math.min(1.0f, mAlpha));
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, a));
         g2.drawImage(mImage, -w/2, -h/2, null);
         
 //        if (isSelected) {
@@ -108,6 +114,8 @@ public class TJImage implements Serializable {
 //            g2.drawRect(-w/2, -h/2, w, h);
 //        }
 
+        // restore
+        g2.setComposite(saveComposite);
         g2.setTransform(saveAT);
     }
 
@@ -132,6 +140,25 @@ public class TJImage implements Serializable {
             return false;
         }
     }
+
+    // Hit-test using a point expressed in WORLD coordinates.
+    // This avoids dependence on any global world->screen transform state.
+    public boolean containsWorld(Point2D.Double worldPt) {
+        if (mImage == null || worldPt == null) return false;
+        try {
+            AffineTransform at = new AffineTransform();
+            at.translate(mX, mY);
+            at.rotate(mRotation);
+            at.scale(mScale, mScale);
+            Point2D inversePt = at.inverseTransform(worldPt, null);
+            int w = mImage.getWidth();
+            int h = mImage.getHeight();
+            Rectangle localRect = new Rectangle(-w/2, -h/2, w, h);
+            return localRect.contains(inversePt);
+        } catch (Exception e) {
+            return false;
+        }
+    }
     
     // getters and setters for manipulation
     public void translate(double dx, double dy) {
@@ -148,6 +175,16 @@ public class TJImage implements Serializable {
     
     public void setPosition(double x, double y) {
         this.mX = x; this.mY = y;
+    }
+
+    public float getAlpha() {
+        return this.mAlpha;
+    }
+    public void setAlpha(float alpha) {
+        // Clamp to a safe visible range so selected items never disappear
+        // Ensure minimum alpha of 0.4 and maximum of 1.0
+        float clamped = Math.max(0.4f, Math.min(1.0f, alpha));
+        this.mAlpha = clamped;
     }
     
 }

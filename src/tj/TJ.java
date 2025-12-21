@@ -30,6 +30,11 @@ public class TJ extends XApp {
         return this.mBottomPanel;
     }
     
+    private JPanel mRightPanel = null;
+    public JPanel getCurRightPanel() {
+        return this.mRightPanel;
+    }
+    
     private TJXform mXform = null;
     public TJXform getXform() {
         return this.mXform;
@@ -131,6 +136,20 @@ public class TJ extends XApp {
         
         if (this.mBottomPanel != null) {
             this.mFrame.add(this.mBottomPanel, BorderLayout.SOUTH);
+        }
+        
+        refreshFrame();
+    }
+    
+    public void setRightPanel(JPanel newPanel) {
+        if (this.mRightPanel != null) {
+            this.mFrame.remove(this.mRightPanel);
+        }
+        
+        this.mRightPanel = newPanel;
+        
+        if (this.mRightPanel != null) {
+            this.mFrame.add(this.mRightPanel, BorderLayout.EAST);
         }
         
         refreshFrame();

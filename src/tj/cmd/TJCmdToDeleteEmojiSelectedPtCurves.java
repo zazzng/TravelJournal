@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import tj.TJ;
 import tj.TJEmojiPage;
 import tj.TJPtCurve;
+import tj.TJImage;
 import tj.scenario.TJEmojiScenario;
 import x.XApp;
 import x.XCmdToChangeScene;
@@ -45,6 +46,14 @@ public class TJCmdToDeleteEmojiSelectedPtCurves extends XLoggableCmd {
             emojiPage.getPtCurves().removeAll(this.mSelectedPtCurves);
             emojiPage.getSelectedPtCurves().clear();
             System.out.println("[DELETE-EMOJI] After: " + emojiPage.getPtCurves().size() + " curves total");
+
+            // Also delete selected decorations
+            ArrayList<TJImage> selectedDecos = emojiPage.getSelectedDecorations();
+            if (selectedDecos != null && !selectedDecos.isEmpty()) {
+                System.out.println("[DELETE-EMOJI] Deleting " + selectedDecos.size() + " selected decorations");
+                emojiPage.getDecorations().removeAll(selectedDecos);
+                selectedDecos.clear();
+            }
         }
         
         System.out.println("[DELETE-EMOJI] Removing from PtCurveMgr: " + this.mSelectedPtCurves.size() + " curves");
