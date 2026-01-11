@@ -2,6 +2,7 @@ package tj;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -33,12 +34,20 @@ public class TJCanvas2D extends JPanel {
     
     public static final double TOP_NAV_RATIO = 0.065;
     public static final double BOTTOM_NAV_RATIO = 0.1;
+    public static final double PAGE_VIEW_HEIGHT_RATIO = 0.7;
+    public static final double PAGE_EDIT_HEIGHT_RATIO = 0.85;
     public static final double PAGE_ASPECT_RATIO = 0.75;
     
     private static final int PAGE_CORNER_ARC = 25;
     private static final double PEN_TIP_OFFSET = 30.0;
     public static final float STROKE_WIDTH_INCREMENT = 1f;
     public static final float STROKE_MIN_WIDTH = 1f;
+
+
+    private static final Color COLOR_INFO = new Color(255, 0, 0, 128);
+    private static final Font FONT_INFO = new Font("Monospaced", Font.PLAIN, 24);
+    private static final float INFO_TOP_ALIGNMENT_X = 20;
+    private static final float INFO_TOP_ALIGNMENT_Y = 30;
 
     // fields
     private TJ mTJ = null;
@@ -60,6 +69,8 @@ public class TJCanvas2D extends JPanel {
         this.mTJ = tj;
         this.mCurColorForPtCurve = TJCanvas2D.COLOR_PT_CURVE_DEFAULT;
         this.mCurStrokeForPtCurve = TJCanvas2D.STROKE_PT_CURVE_DEFAULT;
+        setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
     }
 
     @Override
@@ -85,13 +96,14 @@ public class TJCanvas2D extends JPanel {
         
         // current scene's screen obkects
         curScene.renderScreenObjects(g2);
+        this.drawInfo(g2);
         
     }
     
     private void drawSpread(Graphics2D g2) {
         // Draw the standard 1800x1200 spread in World Coordinates
-        double width = TJPageMgr.WORLD_PAGE_WIDTH;
-        double height = TJPageMgr.WORLD_PAGE_HEIGHT;
+        double width = TJJournalBookMgr.WORLD_PAGE_WIDTH;
+        double height = TJJournalBookMgr.WORLD_PAGE_HEIGHT;
         
         // Left Page (0, 0)
         g2.setColor(Color.WHITE);
@@ -145,7 +157,8 @@ public class TJCanvas2D extends JPanel {
         }
     }
     
-    public void drawSelectedPtCurves(Graphics2D g2, ArrayList<TJPtCurve> selectedPtCurves) {
+    public void drawSelectedPtCurves(Graphics2D g2,
+        ArrayList<TJPtCurve> selectedPtCurves) {
         // draw the selected point curves
         for (TJPtCurve selectedPtCurve : selectedPtCurves) {
             this.drawPtCurve(g2, selectedPtCurve,
@@ -162,5 +175,64 @@ public class TJCanvas2D extends JPanel {
                 ptCurve.getStroke());
         }
     }
+    
+    public void drawImages(Graphics2D g2, ArrayList<TJImage> images) {
+        for (TJImage img : images) {
+            img.draw(g2);
+        }
+    }
+    
+    public void drawPenTip(Graphics2D g2) {
+        // display the current pen tip color and size
+        BasicStroke bs = (BasicStroke) this.mCurStrokeForPtCurve;
+        Point2D.Double worldPt0 = new Point2D.Double(0.0, 0.0);
+        Point2D.Double worldPt1 = new Point2D.Double(bs.getLineWidth(), 0.0);
+        Point screenPt0 = this.mTJ.getXform().calcPtFromWorldToScreen(worldPt0);
+        Point screenPt1 = this.mTJ.getXform().calcPtFromWorldToScreen(worldPt1);
+        double d = screenPt0.distance(screenPt1);
+        double r = d / 2.0;
 
+        Point2D.Double ctr = new Point2D.Double(
+            this.getWidth() - TJCanvas2D.PEN_TIP_OFFSET,
+            TJCanvas2D.PEN_TIP_OFFSET);
+        Ellipse2D.Double e = new Ellipse2D.Double(ctr.x - r, ctr.y - r, d, d);
+        g2.setColor(this.mCurColorForPtCurve);
+        g2.fill(e);
+
+        Stroke originalStroke = g2.getStroke();
+        Color originalColor = g2.getColor();
+
+        g2.setStroke(new BasicStroke(1.0f));
+        g2.setColor(Color.LIGHT_GRAY);
+
+        g2.draw(e);
+
+        g2.setStroke(originalStroke);
+        g2.setColor(originalColor);
+     }
+    
+    public void increaseStrokeWidthForCurPtCurve(float f) {
+        // set the stroke width higher
+        BasicStroke bs = (BasicStroke) this.mCurStrokeForPtCurve;
+        float w = bs.getLineWidth();
+        w += f;
+        
+        if (w < TJCanvas2D.STROKE_MIN_WIDTH) {
+            w = TJCanvas2D.STROKE_MIN_WIDTH;
+        }
+        
+        this.mCurStrokeForPtCurve = new BasicStroke(w, bs.getEndCap(),
+            bs.getLineJoin());
+    }
+
+    private void drawInfo(Graphics2D g2) {
+        // display the current mode
+//        String str = String.valueOf(this.mTJ.getMode());
+        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
+        String str = curScene.getClass().getSimpleName();
+        g2.setColor(TJCanvas2D.COLOR_INFO);
+        g2.setFont(TJCanvas2D.FONT_INFO);
+        g2.drawString(str, TJCanvas2D.INFO_TOP_ALIGNMENT_X, 
+            TJCanvas2D.INFO_TOP_ALIGNMENT_Y);
+    }
 }

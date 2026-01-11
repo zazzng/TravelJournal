@@ -30,6 +30,11 @@ public class TJ extends XApp {
         return this.mBottomPanel;
     }
     
+    private JPanel mRightPanel = null;
+    public JPanel getCurRightPanel() {
+        return this.mRightPanel;
+    }
+    
     private TJXform mXform = null;
     public TJXform getXform() {
         return this.mXform;
@@ -45,9 +50,9 @@ public class TJ extends XApp {
         return this.mEventListener;
     }
     
-    private TJPageMgr mPageMgr = null;
-    public TJPageMgr getPageMgr() {
-        return this.mPageMgr;
+    private TJJournalBookMgr mJournalBookMgr = null;
+    public TJJournalBookMgr getJournalBookMgr() {
+        return this.mJournalBookMgr;
     }
     
     private TJPenMarkMgr mPenMarkMgr = null;
@@ -82,19 +87,12 @@ public class TJ extends XApp {
         this.mXform = new TJXform();
         this.mColorChooser = new TJColorChooser();
         this.mEventListener = new TJEventListener(this);
-        this.mPageMgr = new TJPageMgr(this);
+        this.mJournalBookMgr = new TJJournalBookMgr(this);
         this.mPenMarkMgr = new TJPenMarkMgr();
         this.mPtCurveMgr = new TJPtCurveMgr();
         this.mScenarioMgr = new TJScenarioMgr(this);
         this.mLogMgr = new XLogMgr();
         this.mLogMgr.setPrintOn(true);
-        
-        // load or initialize journal data
-        boolean loadSuccess = this.mPageMgr.loadJournal();
-        if (!loadSuccess || this.mPageMgr.getJournalPages().isEmpty()) {
-            // Start with a blank spread if loading failed or file was empty
-            this.mPageMgr.addEmptyPage(); 
-        }
         
         // connect event listeners
         this.mCanvas2D.addMouseListener(this.mEventListener);
@@ -138,6 +136,20 @@ public class TJ extends XApp {
         
         if (this.mBottomPanel != null) {
             this.mFrame.add(this.mBottomPanel, BorderLayout.SOUTH);
+        }
+        
+        refreshFrame();
+    }
+    
+    public void setRightPanel(JPanel newPanel) {
+        if (this.mRightPanel != null) {
+            this.mFrame.remove(this.mRightPanel);
+        }
+        
+        this.mRightPanel = newPanel;
+        
+        if (this.mRightPanel != null) {
+            this.mFrame.add(this.mRightPanel, BorderLayout.EAST);
         }
         
         refreshFrame();

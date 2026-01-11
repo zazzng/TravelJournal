@@ -55,8 +55,16 @@ public class TJEventListener implements MouseListener, MouseMotionListener, KeyL
     public void keyTyped(KeyEvent e) {}
 
     @Override
-    public void keyPressed(KeyEvent e) {}
+    public void keyPressed(KeyEvent e) {
+        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
+        curScene.handleKeyDown(e);
+        this.mTJ.getCanvas2D().repaint();
+    }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+        TJScene curScene = (TJScene)this.mTJ.getScenarioMgr().getCurScene();
+        curScene.handleKeyUp(e);
+        this.mTJ.getCanvas2D().repaint();
+    }
 }

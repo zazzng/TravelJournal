@@ -24,7 +24,6 @@ public class TJCmdToUpdateSelectedPtCurves extends XLoggableCmd {
     @Override
     protected boolean defineCmd() {
         TJ tj = (TJ)this.mApp;
-//        tj.updateSelectedPtCurves();
         TJSelectScenario.getSingle().updateSelectedPtCurves();
         this.mNumOfSelectedPtCurves = tj.getPtCurveMgr().
             getSelectedPtCurves().size();
